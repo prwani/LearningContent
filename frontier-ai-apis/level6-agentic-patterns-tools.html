@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 6: Agents - LLMs + Tools + Structured Output - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 5 of 8</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="4">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-6">LEVEL 6</span>
+                <h2 class="text-2xl font-bold text-gray-800">Agents &mdash; LLMs + Tools + Structured Output</h2>
+            </div>
+
+            <!-- 5.1 Structured Output -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">6.1 Structured Output — Guaranteed JSON</h3>
+                <p class="text-sm text-gray-600 mb-4">Both providers support forcing the model to output valid JSON matching a schema.</p>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="openai-badge">OpenAI</span>
+                        </div>
+                        <pre class="code-openai p-4 text-green-300"><code>// Chat Completions
+{
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "weather_report",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "city": {"type": "string"},
+          "temp_f": {"type": "number"},
+          "condition": {"type": "string"}
+        },
+        "required": ["city","temp_f","condition"]
+      }
+    }
+  }
+}
+
+// Responses API: same, via text.format
+{
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "schema": { ... }
+    }
+  }
+}</code></pre>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="anthropic-badge">Anthropic</span>
+                        </div>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>// Use a tool with exact schema
+// to force structured output
+{
+  "tools": [{
+    "name": "weather_report",
+    "description": "Output weather data",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "city": {"type": "string"},
+        "temp_f": {"type": "number"},
+        "condition": {"type": "string"}
+      },
+      "required": ["city","temp_f","condition"]
+    }
+  }],
+  "tool_choice": {
+    "type": "tool",
+    "name": "weather_report"
+  }
+}
+
+// Force model to use this specific tool
+// Output comes as tool_use block</code></pre>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                    <strong>Different approaches:</strong> OpenAI has a dedicated <code>response_format</code> for JSON output. Anthropic achieves this by forcing a specific tool call with <code>tool_choice</code>. Both guarantee valid JSON.
+                </div>
+            </div>
+
+            <!-- 5.2 Agentic Loop Pattern -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">6.2 The Agentic Loop — Multi-Step Reasoning</h3>
+                <p class="text-sm text-gray-600 mb-4">Real agents need to call multiple tools, reason between steps, and decide when they're done.</p>
+
+                <div class="mermaid">
+flowchart TB
+    Start["User Request"] --> Call["Send to Model"]
+    Call --> Check{"stop_reason?"}
+
+    Check -->|"stop / end_turn"| Done["Return Final Answer"]
+    Check -->|"tool_calls / tool_use"| Exec["Execute Tool(s)"]
+    Exec --> Append["Append Results to Messages"]
+    Append --> Call
+
+    style Start fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+    style Done fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style Check fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    style Exec fill:#fce7f3,stroke:#ec4899,stroke-width:2px
+                </div>
+
+                <div class="mt-4 grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold mb-2 text-emerald-700">OpenAI Agentic Loop</h4>
+                        <pre class="code-openai p-4 text-green-300 text-xs"><code>// Pseudocode
+while True:
+  response = openai.chat.completions.create(
+    model="gpt-4o",
+    messages=messages,
+    tools=tools
+  )
+  msg = response.choices[0].message
+  messages.append(msg)
+
+  if msg.tool_calls:
+    for call in msg.tool_calls:
+      result = execute(call.function)
+      messages.append({
+        "role": "tool",
+        "tool_call_id": call.id,
+        "content": result
+      })
+  else:
+    break  # Done!
+
+print(msg.content)</code></pre>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2 text-amber-700">Anthropic Agentic Loop</h4>
+                        <pre class="code-anthropic p-4 text-amber-200 text-xs"><code>// Pseudocode
+while True:
+  response = anthropic.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=4096,
+    messages=messages,
+    tools=tools
+  )
+  messages.append({
+    "role": "assistant",
+    "content": response.content
+  })
+
+  tool_uses = [b for b in response.content
+               if b.type == "tool_use"]
+  if tool_uses:
+    results = []
+    for tu in tool_uses:
+      result = execute(tu.name, tu.input)
+      results.append({
+        "type": "tool_result",
+        "tool_use_id": tu.id,
+        "content": result
+      })
+    messages.append({"role":"user",
+                     "content": results})
+  else:
+    break  # Done!
+
+print(response.content[0].text)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5.3 Responses API Simplifies Agents -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">6.3 How Responses API Simplifies Agents</h3>
+                <p class="text-sm text-gray-600 mb-4">With built-in tools, the Responses API handles tool execution internally — no agentic loop needed for built-in tools.</p>
+
+                <pre class="code-openai p-4 text-green-300"><code>// One call does everything - model searches web, reads files, runs code
+POST /v1/responses
+
+{
+  "model": "gpt-4o",
+  "input": "Find the latest NVIDIA stock price, calculate the P/E ratio, and create a chart",
+  "tools": [
+    {"type": "web_search"},
+    {"type": "code_interpreter"}
+  ],
+  "store": true
+}
+
+// The API orchestrates internally:
+// 1. Searches web for stock price
+// 2. Searches web for earnings data
+// 3. Runs Python to calculate P/E ratio
+// 4. Generates chart image
+// 5. Returns combined result
+// All in ONE API call!</code></pre>
+
+                <div class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 class="font-bold text-purple-800 mb-2">When You Still Need an Agentic Loop</h4>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-semibold text-emerald-700 mb-1">No loop needed (Responses API)</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
+                                <li>web_search, file_search, code_interpreter</li>
+                                <li>image_generation</li>
+                                <li>Any built-in tool</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-amber-700 mb-1">Loop still needed (both providers)</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
+                                <li>Custom functions (your code)</li>
+                                <li>Database queries</li>
+                                <li>External API calls</li>
+                                <li>Any tool requiring your execution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="nav-controls">
+        <a href="level5-tool-discovery.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 5: Tool Discovery &amp; Advanced Tool Use</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level7-skills-plugins.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 7: Skills & Plugins &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight': window.location.href="level7-skills-plugins.html"; break;
+                case 'ArrowLeft': window.location.href="level5-tool-discovery.html"; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 6: Agents — LLMs + Tools + Structured Output';
+    </script>
+</body>
+</html>

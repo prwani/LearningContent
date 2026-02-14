@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 9: Plugins — Deep Dive - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+        .level-9 { background: #e0e7ff; color: #3730a3; }
+        .level-10 { background: #fce7f3; color: #831843; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        .plugin-card { background: white; border-radius: 10px; padding: 16px; border: 1px solid #e5e7eb;
+                       transition: all 0.2s; }
+        .plugin-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        body.dark-mode .plugin-card { background: #16213e; border-color: #2d3748; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 9 of 10</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Plugins Deep Dive</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 90%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="9">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-9">LEVEL 9</span>
+                <h2 class="text-2xl font-bold text-gray-800">Plugins — Deep Dive</h2>
+            </div>
+
+            <!-- 9.1 What Is a Plugin? -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.1 What Is a Plugin?</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="anthropic-badge">Anthropic</span> — A plugin is a <strong>file-based, shareable bundle</strong> that combines multiple capabilities into a single installable unit. Plugins are SDK-level — they work in Claude Code and Cowork, <em>not</em> directly in the Messages API.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h4 class="font-semibold text-sm mb-2 text-gray-700">A plugin bundles:</h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li><strong>Skills</strong> — SKILL.md files (model-invoked domain expertise)</li>
+                            <li><strong>MCP connectors</strong> — external tools via Model Context Protocol</li>
+                            <li><strong>Slash commands</strong> — user-triggered workflows (e.g. <code class="text-purple-600">/sales:prospect-research</code>)</li>
+                            <li><strong>Sub-agents</strong> — specialized agents for parallel workstreams</li>
+                            <li><strong>Hooks</strong> — event handlers for pre/post processing</li>
+                        </ul>
+                        <p class="text-xs text-gray-500 mt-2">All defined in a <code>.claude-plugin/plugin.json</code> manifest.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-sm mb-3 text-gray-700">Plugin directory structure:</h4>
+                        <pre class="code-anthropic p-4 text-amber-200 text-xs"><code>my-plugin/
+├── .claude-plugin/
+│   └── plugin.json        # Manifest
+├── commands/
+│   ├── research.js        # Slash commands
+│   └── followup.js
+├── agents/
+│   └── summarizer.js      # Sub-agents
+├── skills/
+│   └── brand-voice/
+│       └── SKILL.md       # Domain skills
+├── hooks/
+│   └── on_file_edit.js    # Event hooks
+└── mcp/
+    └── crm-server.js      # MCP connectors</code></pre>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold text-sm mb-2 text-gray-700">plugin.json manifest:</h4>
+                <pre class="code-anthropic p-4 text-amber-200 text-xs"><code>{
+  "name": "sales-toolkit",
+  "version": "1.0.0",
+  "description": "Sales prospecting and CRM integration",
+  "skills": ["skills/brand-voice/SKILL.md"],
+  "commands": {
+    "prospect-research": "commands/research.js",
+    "followup": "commands/followup.js"
+  },
+  "agents": {
+    "summarizer": "agents/summarizer.js"
+  },
+  "hooks": {
+    "on_file_edit": "hooks/on_file_edit.js"
+  },
+  "mcp_servers": {
+    "crm": {
+      "command": "node",
+      "args": ["mcp/crm-server.js"]
+    }
+  }
+}</code></pre>
+
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-sm text-gray-700">
+                        <span class="openai-badge">OpenAI</span> — OpenAI does <strong>not</strong> have a "plugin" primitive in the same sense. The closest equivalent is the <strong>OpenAI Agents SDK</strong>, where you compose agents with tools + handoffs. OpenAI deprecated their old ChatGPT Plugins in 2024.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 9.2 How a Plugin Uses the Messages API -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.2 How a Plugin Uses the Messages API Under the Hood</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="anthropic-badge">Anthropic</span> — When the Claude Agent SDK loads a plugin, it orchestrates calls to the Messages API. Here is the flow:
+                </p>
+
+                <div class="space-y-4 mb-6">
+                    <div class="flow-step" data-step="1">
+                        <h4 class="font-semibold text-sm text-gray-800">Plugin loaded</h4>
+                        <p class="text-sm text-gray-600">SDK reads <code>plugin.json</code>, discovers skills, commands, and MCP server definitions.</p>
+                    </div>
+                    <div class="flow-step" data-step="2">
+                        <h4 class="font-semibold text-sm text-gray-800">MCP servers started</h4>
+                        <p class="text-sm text-gray-600">SDK starts MCP server processes, fetches available tool lists from each server.</p>
+                    </div>
+                    <div class="flow-step" data-step="3">
+                        <h4 class="font-semibold text-sm text-gray-800">Messages API call constructed</h4>
+                        <p class="text-sm text-gray-600"><code>system</code> prompt includes skill instructions from SKILL.md files. <code>tools</code> array includes MCP tools from connectors. <code>messages</code> contains the user prompt.</p>
+                    </div>
+                    <div class="flow-step" data-step="4">
+                        <h4 class="font-semibold text-sm text-gray-800">Model responds</h4>
+                        <p class="text-sm text-gray-600">If the response contains <code>tool_use</code> blocks, SDK routes each call to the correct MCP server.</p>
+                    </div>
+                    <div class="flow-step" data-step="5">
+                        <h4 class="font-semibold text-sm text-gray-800">Tool result returned</h4>
+                        <p class="text-sm text-gray-600">SDK sends <code>tool_result</code> back to the Messages API in a follow-up request.</p>
+                    </div>
+                    <div class="flow-step" data-step="6">
+                        <h4 class="font-semibold text-sm text-gray-800">Loop continues</h4>
+                        <p class="text-sm text-gray-600">The agentic loop repeats until the model returns a final text response with <code>end_turn</code>.</p>
+                    </div>
+                </div>
+
+                <!-- Sequence Diagram -->
+                <h4 class="font-semibold text-sm mb-2 text-gray-700">Sequence Diagram:</h4>
+                <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant SDK as Agent SDK
+    participant PJ as plugin.json
+    participant MCP as MCP Server
+    participant API as Messages API
+    participant M as Claude Model
+
+    U->>SDK: Run slash command
+    SDK->>PJ: Read manifest
+    PJ-->>SDK: Skills + MCP config
+    SDK->>MCP: Start server process
+    MCP-->>SDK: Available tools list
+    SDK->>API: POST with system + tools + messages
+    API->>M: Forward request
+    M-->>API: tool_use response
+    API-->>SDK: tool_use block
+    SDK->>MCP: Execute tool call
+    MCP-->>SDK: Tool result
+    SDK->>API: POST with tool_result
+    API->>M: Continue generation
+    M-->>API: Final text response
+    API-->>SDK: end_turn
+    SDK-->>U: Display result
+                </div>
+
+                <!-- Under the Hood API Call -->
+                <h4 class="font-semibold text-sm mt-6 mb-2 text-gray-700">What the SDK constructs under the hood:</h4>
+                <pre class="code-anthropic p-4 text-amber-200 text-xs"><code>POST /v1/messages
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 8192,
+  "system": "You are a sales assistant.\n\n[Brand Voice Skill]:\nAlways use professional tone. Lead with value propositions.\nFollow the BANT qualification framework.\n\n[Available Commands]:\n/sales:prospect-research - Research a prospect company\n/sales:followup - Generate follow-up email",
+  "tools": [
+    {
+      "name": "search_prospects",
+      "description": "Search CRM for prospect companies and contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "company_name": {"type": "string"},
+          "industry": {"type": "string"}
+        },
+        "required": ["company_name"]
+      }
+    },
+    {
+      "name": "get_company_info",
+      "description": "Get detailed company information from CRM",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "company_id": {"type": "string"}
+        },
+        "required": ["company_id"]
+      }
+    },
+    {
+      "name": "create_activity",
+      "description": "Log a sales activity in CRM",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string", "enum": ["call", "email", "meeting"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  ],
+  "messages": [
+    {"role": "user", "content": "Research Acme Corp as a potential enterprise prospect"}
+  ]
+}</code></pre>
+            </div>
+
+            <!-- 9.3 Anthropic's 11 Knowledge-Work Plugins -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.3 Anthropic's 11 Knowledge-Work Plugins</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="anthropic-badge">Anthropic</span> — Open-source plugins from <code>github.com/anthropics/knowledge-work-plugins</code>:
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">📋</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Productivity</h5>
+                        <p class="text-xs text-gray-500">Task management, scheduling, notes</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">🔍</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Enterprise Search</h5>
+                        <p class="text-xs text-gray-500">Cross-platform document search</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">💼</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Sales</h5>
+                        <p class="text-xs text-gray-500">Prospecting, CRM, pipeline mgmt</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">💰</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Finance</h5>
+                        <p class="text-xs text-gray-500">Financial analysis, reporting</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">📊</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Data</h5>
+                        <p class="text-xs text-gray-500">Data analysis, visualization</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">⚖️</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Legal</h5>
+                        <p class="text-xs text-gray-500">Contract review, compliance</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">📣</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Marketing</h5>
+                        <p class="text-xs text-gray-500">Content creation, campaigns</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">🎧</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Customer Support</h5>
+                        <p class="text-xs text-gray-500">Ticket triage, response drafts</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">📦</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Product Mgmt</h5>
+                        <p class="text-xs text-gray-500">PRDs, roadmaps, user stories</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">🧬</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Biology Research</h5>
+                        <p class="text-xs text-gray-500">Literature review, experiment design</p>
+                    </div>
+                    <div class="plugin-card">
+                        <div class="text-lg mb-1">🔧</div>
+                        <h5 class="font-semibold text-sm text-gray-800">Plugin Create</h5>
+                        <p class="text-xs text-gray-500">Meta-plugin: build new plugins</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9.4 OpenAI: Agents SDK -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.4 OpenAI: Agents SDK — The Equivalent Architecture</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="openai-badge">OpenAI</span> — OpenAI's equivalent is <strong>not</strong> a "plugin" but the <strong>Agents SDK</strong> with composable agents, tools, and handoffs.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h4 class="font-semibold text-sm mb-2 text-gray-700">Core concepts:</h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li><strong>Agent</strong> — primary LLM with instructions + tools</li>
+                            <li><strong>Tools</strong> — Python functions, built-ins (web_search, shell, code_interpreter), MCP servers</li>
+                            <li><strong>Handoffs</strong> — agent-to-agent delegation (like sub-agents)</li>
+                            <li><strong>Agent-as-Tool</strong> — one agent wraps another as a callable tool</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-sm mb-2 text-gray-700">Agents SDK example:</h4>
+                        <pre class="code-openai p-4 text-green-300 text-xs"><code>from openai_agents import Agent, handoff
+
+triage_agent = Agent(
+    name="Triage",
+    instructions="Route customer requests",
+    tools=[lookup_order],
+    handoffs=[refund_agent, technical_agent]
+)
+
+refund_agent = Agent(
+    name="Refund Specialist",
+    instructions="Handle refund requests",
+    tools=[process_refund, check_eligibility]
+)
+
+technical_agent = Agent(
+    name="Tech Support",
+    instructions="Resolve technical issues",
+    tools=[search_kb, create_ticket]
+)</code></pre>
+                    </div>
+                </div>
+
+                <!-- Architecture Comparison Diagram -->
+                <h4 class="font-semibold text-sm mt-4 mb-2 text-gray-700">Plugin (Anthropic) vs Agent SDK (OpenAI):</h4>
+                <div class="mermaid">
+flowchart LR
+    subgraph "OpenAI Agents SDK"
+        OUser["User"] --> ORunner["Agent Runner"]
+        ORunner --> OTriage["Triage Agent"]
+        OTriage --> OTools["Tools: functions + MCP"]
+        OTriage --> OHandoff1["Handoff: Refund Agent"]
+        OTriage --> OHandoff2["Handoff: Tech Agent"]
+        OHandoff1 --> OAPI["Responses API"]
+        OHandoff2 --> OAPI
+        OTriage --> OAPI
+    end
+
+    subgraph "Anthropic Plugin System"
+        AUser["User"] --> ASDK["Agent SDK"]
+        ASDK --> APlugin["Plugin: plugin.json"]
+        APlugin --> ASkills["Skills: SKILL.md"]
+        APlugin --> AMCP["MCP Connectors"]
+        APlugin --> ASubAgent["Sub-agents"]
+        ASkills --> AAPI["Messages API"]
+        AMCP --> AAPI
+        ASubAgent --> AAPI
+    end
+
+    style OUser fill:#dcfce7,stroke:#10a37f,stroke-width:2px
+    style OAPI fill:#dcfce7,stroke:#10a37f,stroke-width:2px
+    style AUser fill:#fef3c7,stroke:#d4a574,stroke-width:2px
+    style AAPI fill:#fef3c7,stroke:#d4a574,stroke-width:2px
+                </div>
+            </div>
+
+            <!-- 9.5 Side-by-Side Comparison Table -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.5 Side-by-Side Comparison</h3>
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr class="bg-purple-50">
+                                <th class="text-purple-800">Feature</th>
+                                <th class="text-purple-800"><span class="openai-badge">OpenAI</span></th>
+                                <th class="text-purple-800"><span class="anthropic-badge">Anthropic</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">Bundle primitive</td>
+                                <td>Agent (Agents SDK)</td>
+                                <td>Plugin (.claude-plugin/)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Manifest</td>
+                                <td>Python/TS agent definition</td>
+                                <td>plugin.json</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Skills</td>
+                                <td>Mounted via shell containers</td>
+                                <td>SKILL.md files in plugin</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">External tools</td>
+                                <td>MCP + function tools</td>
+                                <td>MCP connectors in plugin</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Slash commands</td>
+                                <td>Not supported</td>
+                                <td>/plugin:command</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Sub-agents</td>
+                                <td>handoff() + agent-as-tool</td>
+                                <td>Sub-agents in plugin</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Hooks</td>
+                                <td>Guardrails (input/output)</td>
+                                <td>Event hooks (pre/post)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Distribution</td>
+                                <td>PyPI / npm packages</td>
+                                <td>File-based directories</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Marketplace</td>
+                                <td>No official marketplace</td>
+                                <td>11 open-source + claude.com/plugins</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">API layer</td>
+                                <td>Responses API</td>
+                                <td>Messages API (under the hood)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 9.6 Architecture Diagram -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">9.6 Full Architecture — Both Platforms</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="both-badge">Both</span> — End-to-end flow from user request through the SDK layer to the underlying API.
+                </p>
+                <div class="mermaid">
+flowchart TB
+    User["User Request"]
+
+    subgraph "OpenAI Path"
+        direction TB
+        OSDK["Agents SDK Runner"]
+        OAgent["Agent: instructions + tools"]
+        OAPI["Responses API"]
+        OBuiltin["Built-in Tools: web_search, shell, code_interpreter"]
+        OFunc["Function Tools + MCP"]
+        OHandoff["Handoffs: agent-to-agent"]
+
+        OSDK --> OAgent
+        OAgent --> OAPI
+        OAPI --> OBuiltin
+        OAPI --> OFunc
+        OAgent --> OHandoff
+        OHandoff --> OAPI
+    end
+
+    subgraph "Anthropic Path"
+        direction TB
+        ASDK["Agent SDK"]
+        APlugin["Plugin: plugin.json manifest"]
+        AAPI["Messages API"]
+        ASkill["Skills: SKILL.md in system prompt"]
+        AMCP2["MCP Tools in tools array"]
+        ASubA["Sub-agents: parallel workstreams"]
+
+        ASDK --> APlugin
+        APlugin --> AAPI
+        AAPI --> ASkill
+        AAPI --> AMCP2
+        APlugin --> ASubA
+        ASubA --> AAPI
+    end
+
+    User --> OSDK
+    User --> ASDK
+
+    style User fill:#ede9fe,stroke:#8b5cf6,stroke-width:3px
+    style OAPI fill:#dcfce7,stroke:#10a37f,stroke-width:2px
+    style AAPI fill:#fef3c7,stroke:#d4a574,stroke-width:2px
+    style OAgent fill:#dcfce7,stroke:#10a37f,stroke-width:1px
+    style APlugin fill:#fef3c7,stroke:#d4a574,stroke-width:1px
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div class="nav-controls">
+        <a href="level8-agentic-patterns-full.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 8: Agents &mdash; LLMs + Tools + Skills + Structured Output</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level10-evolution-reference.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 10: Evolution &amp; Reference &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            var term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(function(c) {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowLeft': window.location.href='level8-agentic-patterns-full.html'; break;
+                case 'ArrowRight': window.location.href='level10-evolution-reference.html'; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 9: Plugins — Deep Dive';
+    </script>
+</body>
+</html>

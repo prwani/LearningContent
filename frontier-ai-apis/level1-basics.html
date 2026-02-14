@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 1: The Basics - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 1 of 10</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="0">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-1">Level 1</span>
+                <h2 class="text-2xl font-bold text-gray-800">The Basics</h2>
+            </div>
+
+            <!-- 1.1 What are these APIs -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">1.1 What Are These APIs?</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-50">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-2xl">🟢</span>
+                            <h4 class="font-bold text-emerald-800">OpenAI</h4>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <p><strong>Chat Completions API</strong> — The original. Send messages, get responses. Stateless.</p>
+                            <p><strong>Responses API</strong> — The new standard (2025+). Stateful, tool-native, agentic.</p>
+                            <p class="text-gray-500"><em>Assistants API — Deprecated, sunsetting H1 2026</em></p>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-lg border-2 border-amber-200 bg-amber-50">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-2xl">🟤</span>
+                            <h4 class="font-bold text-amber-800">Anthropic</h4>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <p><strong>Messages API</strong> — The single unified API. Send messages, get responses. Stateless.</p>
+                            <p><strong>Tool Use</strong> — Built into Messages API. Define tools via JSON Schema.</p>
+                            <p><strong>MCP</strong> — Model Context Protocol for external tool/service integration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1.2 Architecture Overview -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">1.2 API Landscape Overview</h3>
+                <div class="mermaid">
+flowchart LR
+    subgraph OpenAI["OpenAI API Ecosystem"]
+        direction TB
+        CC["Chat Completions<br/>/v1/chat/completions<br/>Stateless"]
+        RA["Responses API<br/>/v1/responses<br/>Stateful + Tools"]
+        AA["Assistants API<br/>DEPRECATED"]
+        CC -.->|"Migrate to"| RA
+        AA -.->|"Migrate to"| RA
+    end
+
+    subgraph Anthropic["Anthropic API Ecosystem"]
+        direction TB
+        MA["Messages API<br/>/v1/messages<br/>Stateless"]
+        TU["Tool Use<br/>Built into Messages"]
+        MCP["MCP<br/>External Tools"]
+        MA --- TU
+        MA --- MCP
+    end
+
+    style CC fill:#dcfce7,stroke:#10a37f,stroke-width:2px
+    style RA fill:#bbf7d0,stroke:#10a37f,stroke-width:3px
+    style AA fill:#fecaca,stroke:#ef4444,stroke-width:1px
+    style MA fill:#fef3c7,stroke:#d4a574,stroke-width:3px
+    style TU fill:#fde68a,stroke:#d4a574,stroke-width:2px
+    style MCP fill:#fde68a,stroke:#d4a574,stroke-width:2px
+                </div>
+            </div>
+
+            <!-- 1.3 Simple One-Turn Call -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">1.3 Your First API Call — One Turn</h3>
+                <p class="text-sm text-gray-600 mb-4">The simplest interaction: send a message, get a response.</p>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <!-- OpenAI -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="openai-badge">OpenAI</span>
+                            <span class="text-sm font-semibold">Chat Completions</span>
+                        </div>
+                        <pre class="code-openai p-4 text-green-300"><code>POST /v1/chat/completions
+
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful assistant."
+    },
+    {
+      "role": "user",
+      "content": "What is DNS?"
+    }
+  ]
+}</code></pre>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <strong>Key:</strong> <code>messages</code> array with <code>role</code> + <code>content</code>
+                        </div>
+                    </div>
+
+                    <!-- Anthropic -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="anthropic-badge">Anthropic</span>
+                            <span class="text-sm font-semibold">Messages API</span>
+                        </div>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>POST /v1/messages
+
+{
+  "model": "claude-sonnet-4-5",
+  "max_tokens": 1024,
+  "system": "You are a helpful assistant.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is DNS?"
+    }
+  ]
+}</code></pre>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <strong>Key:</strong> <code>system</code> is top-level, not in messages. <code>max_tokens</code> required.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Differences Callout -->
+                <div class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 class="font-bold text-purple-800 mb-2">Key Differences</h4>
+                    <table class="comparison-table text-sm">
+                        <tr>
+                            <td class="font-semibold w-40">System prompt</td>
+                            <td><span class="openai-badge">OpenAI</span> Inside <code>messages[]</code> as <code>"role": "system"</code></td>
+                            <td><span class="anthropic-badge">Anthropic</span> Top-level <code>"system"</code> field</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Max tokens</td>
+                            <td><span class="openai-badge">OpenAI</span> Optional (defaults vary)</td>
+                            <td><span class="anthropic-badge">Anthropic</span> <strong>Required</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Endpoint</td>
+                            <td><span class="openai-badge">OpenAI</span> <code>/v1/chat/completions</code></td>
+                            <td><span class="anthropic-badge">Anthropic</span> <code>/v1/messages</code></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 1.4 Response Format -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">1.4 Reading the Response</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="openai-badge">OpenAI</span>
+                            <span class="text-sm font-semibold">Chat Completions Response</span>
+                        </div>
+                        <pre class="code-openai p-4 text-green-300"><code>{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "model": "gpt-4o",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "DNS stands for..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 150,
+    "total_tokens": 175
+  }
+}</code></pre>
+                        <div class="mt-2 text-xs text-gray-500">
+                            Access: <code>response.choices[0].message.content</code>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="anthropic-badge">Anthropic</span>
+                            <span class="text-sm font-semibold">Messages Response</span>
+                        </div>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>{
+  "id": "msg_abc123",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-4-5",
+  "content": [
+    {
+      "type": "text",
+      "text": "DNS stands for..."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 25,
+    "output_tokens": 150
+  }
+}</code></pre>
+                        <div class="mt-2 text-xs text-gray-500">
+                            Access: <code>response.content[0].text</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 class="font-bold text-purple-800 mb-2">Structural Differences</h4>
+                    <table class="comparison-table text-sm">
+                        <tr>
+                            <td class="font-semibold w-40">Response text</td>
+                            <td><span class="openai-badge">OAI</span> <code>choices[0].message.content</code> (string)</td>
+                            <td><span class="anthropic-badge">Ant</span> <code>content[0].text</code> (content blocks array)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Multiple outputs</td>
+                            <td><span class="openai-badge">OAI</span> <code>n</code> param for parallel generations</td>
+                            <td><span class="anthropic-badge">Ant</span> Not supported (one response per call)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Content format</td>
+                            <td><span class="openai-badge">OAI</span> Plain string</td>
+                            <td><span class="anthropic-badge">Ant</span> Array of typed content blocks</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="nav-controls">
+        <span></span>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level2-multi-turn.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 2: Multi-Turn Conversations &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight': window.location.href="level2-multi-turn.html"; break;
+                case 'ArrowLeft':  break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 1: The Basics';
+    </script>
+</body>
+</html>

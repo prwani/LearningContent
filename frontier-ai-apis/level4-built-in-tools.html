@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 4: Built-in Tools - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 4 of 10</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="3">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-4">Level 4</span>
+                <h2 class="text-2xl font-bold text-gray-800">Built-in Tools</h2>
+            </div>
+
+            <!-- 4.1 OpenAI Built-in Tools -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">4.1 OpenAI Responses API — Built-in Tools</h3>
+                <p class="text-sm text-gray-600 mb-4">The Responses API has first-class support for built-in tools that OpenAI hosts and executes for you — no function implementation needed.</p>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 mb-2">web_search</h4>
+                        <p class="text-sm mb-2">Search the web in real-time</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "web_search"}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h4 class="font-bold text-blue-800 mb-2">file_search</h4>
+                        <p class="text-sm mb-2">Search uploaded files/vector stores</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "file_search",
+   "vector_store_ids": ["vs_..."]}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-2">code_interpreter</h4>
+                        <p class="text-sm mb-2">Execute Python code in sandbox</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "code_interpreter"}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-pink-50 rounded-lg border border-pink-200">
+                        <h4 class="font-bold text-pink-800 mb-2">image_generation</h4>
+                        <p class="text-sm mb-2">Generate images inline</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "image_generation"}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 class="font-bold text-yellow-800 mb-2">mcp</h4>
+                        <p class="text-sm mb-2">Connect to external MCP servers</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "mcp",
+   "server_url": "https://..."}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                        <h4 class="font-bold text-indigo-800 mb-2">shell</h4>
+                        <p class="text-sm mb-2">Full Linux terminal in a container</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "shell",
+   "environment":
+     {"type": "container_auto"}}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-rose-50 rounded-lg border border-rose-200">
+                        <h4 class="font-bold text-rose-800 mb-2">computer_use</h4>
+                        <p class="text-sm mb-2">Control desktop UI via screenshots + clicks</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "computer_use_preview",
+   "display_width": 1024,
+   "display_height": 768,
+   "environment":
+     {"type": "browser"}}
+]</code></pre>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-2">function</h4>
+                        <p class="text-sm mb-2">Your custom functions (same as before)</p>
+                        <pre class="code-openai p-2 text-green-300 text-xs"><code>"tools": [
+  {"type": "function",
+   "name": "...",
+   "parameters": {...}}
+]</code></pre>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <h4 class="font-bold text-emerald-800 mb-2">Full Example — Responses API with Web Search</h4>
+                    <pre class="code-openai p-4 text-green-300"><code>POST /v1/responses
+
+{
+  "model": "gpt-4o",
+  "input": "What are the latest AI regulations in the EU?",
+  "tools": [{"type": "web_search"}],
+  "instructions": "Cite your sources.",
+  "store": true
+}
+
+// OpenAI executes the web search FOR you
+// No function code needed on your side
+// Results are woven into the response</code></pre>
+                </div>
+            </div>
+
+            <!-- 4.2 Anthropic Built-in Tools -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">4.2 Anthropic Messages API — Built-in Tools</h3>
+                <p class="text-sm text-gray-600 mb-4">Anthropic also has built-in tools that run server-side or require your app to relay execution. Specified via versioned type identifiers.</p>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">web_search</h4>
+                        <p class="text-sm mb-2">Real-time web search (server-side)</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "web_search_20250305",
+  "name": "web_search"
+}]</code></pre>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">bash</h4>
+                        <p class="text-sm mb-2">Shell command execution (client-side)</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "bash_20250124",
+  "name": "bash"
+}]</code></pre>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">code_execution</h4>
+                        <p class="text-sm mb-2">Run code in sandbox (server-side)</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "code_execution_20250825",
+  "name": "code_execution"
+}]</code></pre>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">computer</h4>
+                        <p class="text-sm mb-2">Desktop control via screenshots + clicks</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "computer_20250124",
+  "name": "computer",
+  "display_width_px": 1024,
+  "display_height_px": 768
+}]</code></pre>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">web_fetch</h4>
+                        <p class="text-sm mb-2">Fetch specific URLs/APIs (server-side)</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "web_fetch_20250805",
+  "name": "web_fetch"
+}]
+// No OpenAI equivalent</code></pre>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">text_editor</h4>
+                        <p class="text-sm mb-2">File operations (client-side)</p>
+                        <pre class="code-anthropic p-2 text-amber-200 text-xs"><code>"tools": [{
+  "type": "text_editor_20250124",
+  "name": "str_replace_editor"
+}]</code></pre>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+                    <strong>Server vs Client:</strong> Tools like <code>web_search</code>, <code>code_execution</code>, and <code>web_fetch</code> run on Anthropic's servers. Tools like <code>bash</code>, <code>computer</code>, and <code>text_editor</code> require your app to execute commands and return results.
+                </div>
+            </div>
+
+            <!-- 4.3 Advanced Tool Patterns -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">4.3 Advanced Tool Patterns</h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-2">Tool Search</h4>
+                        <p class="text-sm"><span class="anthropic-badge">Anthropic</span> Dynamic discovery across large tool libraries. Model searches for the right tool at runtime instead of listing 100+ tools in context.</p>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-2">Programmatic Tool Calling</h4>
+                        <p class="text-sm"><span class="anthropic-badge">Anthropic</span> Claude orchestrates tools via code — loops, conditionals, error handling — all in one reasoning step.</p>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-2">MCP (Model Context Protocol)</h4>
+                        <p class="text-sm"><span class="both-badge">Both</span> Universal open protocol for connecting to external services. Supported by both OpenAI and Anthropic.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.4 How Built-in Tools Work - Flow Diagrams -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">4.4 How Built-in Tools Work — Flow Diagrams</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="openai-badge">OpenAI</span>
+                            <span class="text-sm font-semibold">Responses API — Built-in Tool Flow</span>
+                        </div>
+                        <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant A as Your App
+    participant R as Responses API
+    participant T as OpenAI Hosted Tool
+
+    U->>A: "Latest EU AI regulations?"
+    A->>R: input + tools: web_search
+    R->>T: Execute web_search internally
+    T-->>R: Search results
+    R->>R: Model synthesizes answer
+    R-->>A: Final response with citations
+    A-->>U: Display answer
+
+    Note over A,R: One API call - OpenAI handles tool execution
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="anthropic-badge">Anthropic</span>
+                            <span class="text-sm font-semibold">Computer Use Tool Flow</span>
+                        </div>
+                        <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant A as Your App
+    participant M as Messages API
+    participant D as Desktop VM
+
+    U->>A: "Fill out the expense form"
+    A->>M: message + tools: computer
+    M-->>A: tool_use: screenshot
+    A->>D: Take screenshot
+    D-->>A: Screenshot image
+    A->>M: tool_result: image
+    M-->>A: tool_use: click 450,320
+    A->>D: Click at coordinates
+    A->>M: tool_result: done
+    M-->>A: tool_use: type "Q1 Report"
+    A->>D: Type text
+    A->>M: tool_result: done
+    M-->>A: "Expense form filled out"
+    A-->>U: Done
+
+    Note over A,M: Multiple round-trips - you control the VM
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                    <strong>Key insight:</strong> OpenAI built-in tools (web_search, code_interpreter) execute server-side in one call. <strong>Computer use on both providers</strong> follows the multi-round-trip pattern — your app must relay screenshots and execute UI actions.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="nav-controls">
+        <a href="level3-function-calling.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 3: Function Calling</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level5-tool-discovery.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 5: Tool Discovery &amp; Advanced Tool Use &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight': window.location.href="level5-tool-discovery.html"; break;
+                case 'ArrowLeft': window.location.href="level3-function-calling.html"; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 4: Built-in Tools';
+    </script>
+</body>
+</html>

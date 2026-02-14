@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 7: Skills & Plugins - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 6 of 8</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="5">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-7">LEVEL 7</span>
+                <h2 class="text-2xl font-bold text-gray-800">Skills & Plugins</h2>
+            </div>
+
+            <!-- 6.1 Agent Skills -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">7.1 Agent Skills — Reusable Knowledge for Agents</h3>
+                <div class="p-4 bg-violet-50 border border-violet-200 rounded-lg mb-4">
+                    <p class="text-sm"><strong>Agent Skills</strong> are folders of instructions, scripts, and resources that agents can discover and use on demand. Originally developed by Anthropic as an <strong>open standard</strong>, now adopted by OpenAI and other agent products.</p>
+                </div>
+
+                <div class="mermaid">
+flowchart TB
+    subgraph Skill["Agent Skill Folder"]
+        direction TB
+        SM["SKILL.md<br/>name, description<br/>+ instructions"]
+        REF["references/<br/>templates, examples"]
+        AST["assets/<br/>scripts, data"]
+        SM --- REF
+        SM --- AST
+    end
+
+    subgraph Agent["AI Agent"]
+        IDX["1. Index: reads name + description"]
+        MATCH["2. Match: user request triggers skill"]
+        LOAD["3. Load: reads full SKILL.md"]
+        EXEC["4. Execute: follows instructions"]
+        IDX --> MATCH
+        MATCH --> LOAD
+        LOAD --> EXEC
+    end
+
+    Skill -.->|"Progressive disclosure"| IDX
+
+    style SM fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+    style EXEC fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                </div>
+
+                <div class="mt-4 grid md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="openai-badge">OpenAI</span>
+                            <span class="text-sm font-semibold">Skills in Responses API</span>
+                        </div>
+                        <pre class="code-openai p-4 text-green-300 text-xs"><code>POST /v1/responses
+
+{
+  "model": "gpt-5.2",
+  "input": "Analyze this dataset",
+  "tools": [
+    {
+      "type": "skill",
+      "skill": {
+        "name": "data-analysis",
+        "description": "Run data analysis"
+      }
+    },
+    {
+      "type": "shell",
+      "environment": {
+        "type": "container_auto"
+      }
+    }
+  ]
+}
+
+// Skills are mounted into the container
+// Model reads SKILL.md for workflow
+// Executes steps in shell</code></pre>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="anthropic-badge">Anthropic</span>
+                            <span class="text-sm font-semibold">Skills via Messages API</span>
+                        </div>
+                        <pre class="code-anthropic p-4 text-amber-200 text-xs"><code>POST /v1/messages
+
+{
+  "model": "claude-sonnet-4-5",
+  "max_tokens": 4096,
+  "system": "You have access to the following skills. Load a skill when the user's request matches its description.\n\nAvailable skills:\n- data-analysis: Analyze datasets with statistical methods\n- report-writer: Generate structured reports",
+  "messages": [
+    {"role": "user",
+     "content": "Analyze this CSV data and write a report"}
+  ],
+  "tools": [
+    {
+      "name": "load_skill",
+      "description": "Load a skill's instructions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "skill_name": {"type": "string"}
+        },
+        "required": ["skill_name"]
+      }
+    }
+  ]
+}
+
+// Skills loaded as system context
+// Tool used to fetch detailed instructions
+// Model follows skill workflow</code></pre>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 class="font-bold text-purple-800 mb-2">Skills — Key Points</h4>
+                    <table class="comparison-table text-sm">
+                        <tr>
+                            <td class="font-semibold w-40">Standard</td>
+                            <td colspan="2"><span class="both-badge">Both</span> Open standard from agentskills.io — same SKILL.md format works across providers</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Loading</td>
+                            <td colspan="2">Progressive disclosure — only metadata indexed on startup, full content loaded on demand</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Activation</td>
+                            <td><span class="openai-badge">OAI</span> Via <code>tools</code> array in API</td>
+                            <td><span class="anthropic-badge">Ant</span> Auto-discovered from <code>.claude/skills/</code></td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Best for</td>
+                            <td colspan="2">SOPs, templates, domain expertise, repeatable workflows — replaces "mega system prompts"</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6.2 Shell, Plugins & Compaction -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">7.2 Shell, Plugins & Compaction</h3>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- OpenAI Shell -->
+                    <div class="p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 mb-3">OpenAI — Shell Tool</h4>
+                        <p class="text-sm mb-3">Full Linux container (Debian 12) with Python, Node.js, Java, Go. Model can install packages, run scripts, write artifacts.</p>
+                        <pre class="code-openai p-3 text-green-300 text-xs"><code>"tools": [{
+  "type": "shell",
+  "environment": {
+    "type": "container_auto"
+  }
+}]
+
+// Container includes:
+// Python 3.11, Node 22, Java 17
+// Go 1.23, Ruby 3.1, PHP 8.2
+// Persistent /mnt/data for artifacts
+// Network access with allowlists</code></pre>
+                        <div class="mt-3 space-y-1 text-xs">
+                            <div class="flex gap-2"><span class="font-semibold text-emerald-700">Ephemeral:</span> <code>container_auto</code> — fresh per request</div>
+                            <div class="flex gap-2"><span class="font-semibold text-emerald-700">Reusable:</span> <code>container_reference</code> — persist state across calls</div>
+                        </div>
+                    </div>
+
+                    <!-- Anthropic Plugins -->
+                    <div class="p-4 bg-amber-50 rounded-lg border-2 border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-3">Anthropic — Knowledge Work Plugins</h4>
+                        <p class="text-sm mb-3">Role-based bundles of skills, MCP connectors, and slash commands. 11 open-source plugins. <em>Note: Plugins are an SDK-level concept — not directly in the Messages API.</em></p>
+                        <pre class="code-anthropic p-3 text-amber-200 text-xs"><code># Plugin structure:
+plugin-name/
+  .claude-plugin/plugin.json  # Manifest
+  .mcp.json        # Tool connections
+  commands/        # Slash commands
+  skills/          # Domain knowledge
+
+# Install and use:
+claude plugin install sales
+# Then: /sales:call-prep
+#        /sales:pipeline-review
+
+# Plugins bundle:
+# - Skills (auto-triggered)
+# - Commands (explicit actions)
+# - Connectors (MCP servers)</code></pre>
+                        <div class="mt-3 space-y-1 text-xs">
+                            <div class="flex gap-2"><span class="font-semibold text-amber-700">11 plugins:</span> productivity, sales, support, PM, marketing, legal, finance, data, search, bio, mgmt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compaction -->
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-2">Context Management for Long-Running Agents</h4>
+                    <p class="text-sm text-gray-600 mb-3">Long-running agents hit context limits. Both providers now offer solutions to keep agents working across extended sessions.</p>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div class="p-3 bg-emerald-50 rounded border border-emerald-200">
+                            <p class="font-semibold text-emerald-700 mb-2">OpenAI — Server-Side Compaction</p>
+                            <ul class="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                                <li><strong>Auto:</strong> Triggers when context nears limit — no code change</li>
+                                <li><strong>Manual:</strong> <code>/responses/compact</code> endpoint</li>
+                                <li>Preserves reasoning continuity mid-stream</li>
+                                <li>Works with <code>previous_response_id</code> for stateful sessions</li>
+                            </ul>
+                        </div>
+                        <div class="p-3 bg-amber-50 rounded border border-amber-200">
+                            <p class="font-semibold text-amber-700 mb-2">Anthropic — Context Editing + Compaction</p>
+                            <ul class="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                                <li><strong>Compaction:</strong> Auto-summarization near context limit</li>
+                                <li><strong>Context editing:</strong> Clear old tool results, thinking blocks</li>
+                                <li><strong>Prompt caching:</strong> Reuse frequent prefixes (up to 1hr)</li>
+                                <li><strong>Memory tool:</strong> Persistent storage across sessions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How it all fits together -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-purple-700 mb-3">How Skills + Shell + Plugins Fit Together</h4>
+                    <div class="mermaid">
+flowchart LR
+    subgraph OpenAI_Stack["OpenAI Agent Stack"]
+        direction TB
+        OSkill["Skills<br/>SKILL.md bundles"]
+        OShell["Shell Tool<br/>Linux container"]
+        OComp["Compaction<br/>Context management"]
+        OResp["Responses API<br/>Orchestrator"]
+        OResp --> OSkill
+        OResp --> OShell
+        OResp --> OComp
+    end
+
+    subgraph Anthropic_Stack["Anthropic Agent Stack"]
+        direction TB
+        ASkill["Skills<br/>SKILL.md bundles"]
+        APlugin["Plugins<br/>Role-based bundles"]
+        AMCP["MCP Connectors<br/>External tools"]
+        AMsg["Messages API<br/>Orchestrator"]
+        AMsg --> APlugin
+        APlugin --> ASkill
+        APlugin --> AMCP
+    end
+
+    style OResp fill:#bbf7d0,stroke:#10a37f,stroke-width:3px
+    style AMsg fill:#fef3c7,stroke:#d4a574,stroke-width:3px
+    style OSkill fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+    style ASkill fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6.3 Complete Capability Comparison -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">7.3 Complete Capability Comparison</h3>
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr class="bg-purple-50">
+                                <th class="text-purple-800">Capability</th>
+                                <th class="text-emerald-800">OpenAI</th>
+                                <th class="text-emerald-800 text-xs">Who Invokes</th>
+                                <th class="text-amber-800">Anthropic</th>
+                                <th class="text-amber-800 text-xs">Who Invokes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">Web search</td>
+                                <td>Built-in <code>web_search</code></td>
+                                <td>Model</td>
+                                <td>Built-in <code>web_search_20250305</code></td>
+                                <td>Model</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Code execution</td>
+                                <td>Built-in <code>code_interpreter</code> + <code>shell</code></td>
+                                <td>Model</td>
+                                <td>Built-in <code>code_execution</code> + <code>bash</code></td>
+                                <td>Model (code_exec) / Model+App (bash)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">File/RAG search</td>
+                                <td>Built-in <code>file_search</code></td>
+                                <td>Model</td>
+                                <td>Built-in <code>text_editor</code> / Via MCP</td>
+                                <td>Model+App</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Image generation</td>
+                                <td>Built-in <code>image_generation</code></td>
+                                <td>Model</td>
+                                <td>Not available</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Web fetch (URL)</td>
+                                <td>Not available</td>
+                                <td>—</td>
+                                <td>Built-in <code>web_fetch_20250805</code></td>
+                                <td>Model</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Computer use</td>
+                                <td>Built-in <code>computer_use_preview</code></td>
+                                <td>Model + App</td>
+                                <td>Built-in <code>computer_20250124</code></td>
+                                <td>Model + App</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Shell / Container</td>
+                                <td>Built-in <code>shell</code> — hosted Debian 12</td>
+                                <td>Model</td>
+                                <td>Built-in <code>bash_20250124</code> (client-side)</td>
+                                <td>Model + App</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Agent Skills</td>
+                                <td>Supported via <code>tools</code> array</td>
+                                <td>Model</td>
+                                <td>Via system prompt or SDK integration</td>
+                                <td>App</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Plugins</td>
+                                <td>Not available</td>
+                                <td>—</td>
+                                <td>11 role-based (not in Messages API directly)</td>
+                                <td>App (SDK)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">MCP integration</td>
+                                <td>Built-in <code>mcp</code> tool type</td>
+                                <td>Model</td>
+                                <td>Native MCP support</td>
+                                <td>Model</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Context compaction</td>
+                                <td>Server-side auto + manual <code>/responses/compact</code></td>
+                                <td>API (auto) or App</td>
+                                <td>Server-side compaction + context editing + prompt caching</td>
+                                <td>API (auto) or App</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Tool search</td>
+                                <td>Not available</td>
+                                <td>—</td>
+                                <td>Dynamic tool discovery</td>
+                                <td>Model</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-600">
+                    <strong>Who Invokes:</strong> <strong>Model</strong> = the AI decides when to use it. <strong>App</strong> = your code must orchestrate it. <strong>Model + App</strong> = model requests actions, app executes and relays results. <strong>API (auto)</strong> = handled automatically by the API infrastructure.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="nav-controls">
+        <a href="level6-agentic-patterns-tools.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 6: Agents &mdash; LLMs + Tools + Structured Output</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level8-agentic-patterns-full.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 8: Agents &mdash; LLMs + Tools + Skills + Structured Output &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight': window.location.href="level8-agentic-patterns-full.html"; break;
+                case 'ArrowLeft': window.location.href="level6-agentic-patterns-tools.html"; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 7: Skills & Plugins';
+    </script>
+</body>
+</html>

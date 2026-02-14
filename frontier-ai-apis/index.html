@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontier AI APIs - Visual Guide | OpenAI vs Anthropic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        .card { background: white; border-radius: 16px; padding: 24px; border: 1px solid #e5e7eb;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; }
+        .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-4px); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-4xl mx-auto px-4 py-6 text-center">
+            <h1 class="text-3xl font-bold mb-2">Frontier AI APIs</h1>
+            <p class="text-purple-100">OpenAI vs Anthropic &mdash; Complete Visual Guide</p>
+            <div class="flex flex-wrap justify-center gap-2 mt-3 text-xs">
+                <span class="bg-white/20 px-2 py-1 rounded">10 Levels</span>
+                <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                <span class="bg-white/20 px-2 py-1 rounded">Use &larr; &rarr; to navigate</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="grid gap-4">
+
+            <a href="level1-basics.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🔰</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#dcfce7; color:#166534; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 1</span>
+                            <h3 class="text-lg font-bold text-gray-800">The Basics</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">One-turn API calls, request/response formats, key differences between providers</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level2-multi-turn.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🔄</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#dbeafe; color:#1e40af; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 2</span>
+                            <h3 class="text-lg font-bold text-gray-800">Multi-Turn Conversations</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Conversation loops, stateless vs stateful, OpenAI Responses API</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level3-function-calling.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🔧</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#fef3c7; color:#92400e; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 3</span>
+                            <h3 class="text-lg font-bold text-gray-800">Function Calling</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Tool definitions, tool calls, sending results back, complete flow</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level4-built-in-tools.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">⚡</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#fce7f3; color:#9d174d; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 4</span>
+                            <h3 class="text-lg font-bold text-gray-800">Built-in Tools</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Web search, code interpreter, shell, computer use, MCP — built-in tools comparison</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level5-tool-discovery.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🔍</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#ede9fe; color:#5b21b6; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 5</span>
+                            <h3 class="text-lg font-bold text-gray-800">Tool Discovery & Advanced Tool Use</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Tool Search Tool, programmatic tool calling, tool use examples, dynamic discovery patterns</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level6-agentic-patterns-tools.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🤖</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#fee2e2; color:#991b1b; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 6</span>
+                            <h3 class="text-lg font-bold text-gray-800">Agents &mdash; LLMs + Tools + Structured Output</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Structured output, the agentic loop pattern, multi-step reasoning with LLMs and tools</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level7-skills-plugins.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">📦</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#ccfbf1; color:#134e4a; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 7</span>
+                            <h3 class="text-lg font-bold text-gray-800">Skills & Plugins</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Agent Skills (SKILL.md), Knowledge Work Plugins, shell containers, compaction</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level8-agentic-patterns-full.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🏗️</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#fef9c3; color:#713f12; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 8</span>
+                            <h3 class="text-lg font-bold text-gray-800">Agents &mdash; LLMs + Tools + Skills + Structured Output</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Full agentic stack combining LLMs + tools + skills + structured output, skill-driven workflows</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level9-plugins-deep-dive.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">🔌</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#e0e7ff; color:#3730a3; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 9</span>
+                            <h3 class="text-lg font-bold text-gray-800">Plugins &mdash; Deep Dive</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">Anthropic plugin architecture, Claude Agent SDK &rarr; Messages API flow, OpenAI Agents SDK equivalent</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+            <a href="level10-evolution-reference.html" class="card">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl">📋</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span style="background:#fce7f3; color:#831843; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Level 10</span>
+                            <h3 class="text-lg font-bold text-gray-800">Evolution & Reference</h3>
+                        </div>
+                        <p class="text-sm text-gray-500">API evolution timeline, master comparison table, quick reference cheat sheet</p>
+                    </div>
+                    <div class="text-gray-400 text-2xl">&rarr;</div>
+                </div>
+            </a>
+
+        </div>
+        <div class="mt-8 text-center text-sm text-gray-400">
+            <p>Use <kbd class="px-2 py-0.5 bg-gray-200 rounded text-gray-600">&larr;</kbd> <kbd class="px-2 py-0.5 bg-gray-200 rounded text-gray-600">&rarr;</kbd> arrow keys to navigate between levels</p>
+            <p class="mt-1"><kbd class="px-2 py-0.5 bg-gray-200 rounded text-gray-600">D</kbd> Dark mode &bull; <kbd class="px-2 py-0.5 bg-gray-200 rounded text-gray-600">H</kbd> Toggle header &bull; <kbd class="px-2 py-0.5 bg-gray-200 rounded text-gray-600">/</kbd> Search</p>
+        </div>
+    </main>
+</body>
+</html>

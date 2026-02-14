@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 5: Tool Discovery & Advanced Tool Use - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+        .level-9 { background: #e0e7ff; color: #3730a3; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 5 of 10</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 py-8 pb-24">
+        <section class="level-slide active-slide" data-slide="5">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-5">Level 5</span>
+                <h2 class="text-2xl font-bold text-gray-800">Tool Discovery &amp; Advanced Tool Use</h2>
+            </div>
+
+            <!-- 5.1 The Problem — Too Many Tools -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.1 The Problem — Too Many Tools</h3>
+                <p class="text-sm text-gray-600 mb-4">As tool ecosystems grow (MCP servers, internal APIs, SaaS integrations), two scaling problems emerge: <strong>(1)</strong> context window bloat — loading 50+ tool definitions consumes ~55K tokens <em>before the conversation even starts</em>, and the model's ability to pick the right tool degrades; <strong>(2)</strong> per-turn overhead — in stateless APIs, tool schemas must be resent with every request.</p>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 class="font-bold text-red-800 mb-2">Problem 1: Context Bloat</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>50+ tool definitions loaded upfront</li>
+                            <li>~55,000 tokens consumed by schemas</li>
+                            <li>Wrong tool selection increases</li>
+                            <li>Regardless of stateful or stateless API</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 class="font-bold text-red-800 mb-2">Problem 2: Per-Turn Overhead</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>Stateless APIs resend tools every turn</li>
+                            <li>Network bandwidth wasted</li>
+                            <li>Anthropic Messages API is stateless</li>
+                            <li>OpenAI Chat Completions is stateless</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <h4 class="font-bold text-green-800 mb-2">How Each Provider Solves It</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li><span class="anthropic-badge">Anthropic</span> Tool Search + defer_loading (removes tools from context entirely)</li>
+                            <li><span class="openai-badge">OpenAI</span> Responses API statefulness (tools persist server-side via <code class="text-xs">previous_response_id</code>)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Token Usage Comparison Diagram -->
+                <div class="mermaid text-sm">
+graph LR
+    subgraph Problem["The Two Problems"]
+        A["50+ Tool Schemas"] --> B["Context Bloat: ~55K tokens"]
+        A --> C["Per-Turn Resending in stateless APIs"]
+    end
+    subgraph Solutions["Solutions"]
+        D["Anthropic: defer_loading + Tool Search"] --> E["85% context reduction"]
+        F["OpenAI: previous_response_id"] --> G["Tools persist server-side"]
+    end
+
+    B --> D
+    C --> F
+
+    style A fill:#fecaca,stroke:#991b1b
+    style B fill:#fecaca,stroke:#991b1b
+    style C fill:#fecaca,stroke:#991b1b
+    style D fill:#fef3c7,stroke:#d4a574
+    style E fill:#fef3c7,stroke:#d4a574
+    style F fill:#d1fae5,stroke:#10a37f
+    style G fill:#d1fae5,stroke:#10a37f
+                </div>
+
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                    <strong>Key insight:</strong> These are <em>different problems with different solutions</em>. OpenAI's stateful <code>previous_response_id</code> eliminates resending tool definitions and enables prompt caching (unchanged tools billed at ~50% discount). Anthropic's <code>defer_loading</code> + Tool Search removes unused tools from context entirely — the model never sees them, improving both cost and accuracy. The ideal solution would combine both: stateful persistence with prompt caching <em>and</em> deferred loading.
+                </div>
+            </div>
+
+            <!-- 5.2 Anthropic: Tool Search Tool -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.2 Anthropic: Tool Search Tool <span class="anthropic-badge">Anthropic</span></h3>
+                <p class="text-sm text-gray-600 mb-4">Anthropic provides a <strong>first-party API feature</strong> for tool discovery. Deferred tools are stripped from context and only surfaced when the model searches for them. Two search variants are available.</p>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">Regex Search</h4>
+                        <p class="text-xs text-gray-600 mb-1">Type: <code class="bg-gray-100 px-1 rounded">tool_search_tool_regex_20251119</code></p>
+                        <p class="text-sm text-gray-700">Pattern-based matching against tool names and descriptions. Fast and precise.</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2">BM25 Search</h4>
+                        <p class="text-xs text-gray-600 mb-1">Type: <code class="bg-gray-100 px-1 rounded">tool_search_tool_bm25_20251119</code></p>
+                        <p class="text-sm text-gray-700">TF-IDF based ranking for semantic relevance. Better for fuzzy matches.</p>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold text-gray-700 mb-2">How It Works</h4>
+                <div class="flow-step" data-step="1">
+                    <p class="text-sm text-gray-700"><strong>Defer tools:</strong> Set <code class="bg-gray-100 px-1 rounded">defer_loading: true</code> on tool definitions. These are NOT loaded into context initially.</p>
+                </div>
+                <div class="flow-step" data-step="2">
+                    <p class="text-sm text-gray-700"><strong>API strips deferred tools:</strong> Only the search tool + non-deferred tools are visible to Claude.</p>
+                </div>
+                <div class="flow-step" data-step="3">
+                    <p class="text-sm text-gray-700"><strong>Claude searches:</strong> When it needs a capability, it calls the search tool to find matching tools.</p>
+                </div>
+                <div class="flow-step" data-step="4">
+                    <p class="text-sm text-gray-700"><strong>References returned:</strong> API returns matching tool references, which expand to full definitions in context.</p>
+                </div>
+                <div class="flow-step" data-step="5">
+                    <p class="text-sm text-gray-700"><strong>Claude calls discovered tools:</strong> The model can now call the discovered tools normally.</p>
+                </div>
+
+                <h4 class="font-semibold text-gray-700 mt-4 mb-2">API Request Example</h4>
+                <pre class="code-anthropic p-4 text-amber-200"><code>// Requires beta header:
+// anthropic-beta: advanced-tool-use-2025-11-20
+
+POST /v1/messages
+{
+  "model": "claude-opus-4-20250514",
+  "max_tokens": 4096,
+  "tools": [
+    {
+      "type": "tool_search_tool_regex_20251119"
+    },
+    {
+      "name": "get_weather",
+      "description": "Get current weather for a city",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "city": {"type": "string"}
+        },
+        "required": ["city"]
+      },
+      "defer_loading": true
+    },
+    {
+      "name": "book_flight",
+      "description": "Book a flight between two airports",
+      "input_schema": { ... },
+      "defer_loading": true
+    },
+    {
+      "name": "search_hotels",
+      "description": "Search for hotels in a city",
+      "input_schema": { ... },
+      "defer_loading": true
+    }
+    // ... 47 more deferred tools
+  ],
+  "messages": [
+    {"role": "user", "content": "What is the weather in Paris?"}
+  ]
+}</code></pre>
+
+                <h4 class="font-semibold text-gray-700 mt-4 mb-2">MCP Server Deferral</h4>
+                <pre class="code-anthropic p-4 text-amber-200"><code>// Defer an entire MCP server's tools
+{
+  "type": "mcp_toolset",
+  "server_url": "https://my-mcp-server.example.com",
+  "default_config": {
+    "defer_loading": true
+  }
+}</code></pre>
+
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                    <strong>Performance gains:</strong> 85% token reduction (~77K down to ~8.7K). Accuracy: Opus 4 improved 49% to 74%, Opus 4.5 improved 79.5% to 88.1% on tool selection benchmarks.
+                </div>
+            </div>
+
+            <!-- 5.3 OpenAI: Stateful API + Dynamic Tool Registry -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.3 OpenAI: Stateful Tools & Discovery Patterns <span class="openai-badge">OpenAI</span></h3>
+                <p class="text-sm text-gray-600 mb-4">OpenAI addresses the tool scaling problem differently from Anthropic — through <strong>two complementary mechanisms</strong>: server-side state (built-in) and a meta-tool registry pattern (community).</p>
+
+                <!-- 5.3a: Responses API Statefulness -->
+                <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200 mb-4">
+                    <h4 class="font-bold text-emerald-800 mb-2">Built-in: Responses API Statefulness</h4>
+                    <p class="text-sm text-gray-700 mb-3">With <code class="bg-white px-1 rounded">previous_response_id</code>, tool definitions are <strong>sent once</strong> and persist server-side for 30+ days. Subsequent turns only need new user input — no tool resending.</p>
+                    <pre class="code-openai p-4 text-green-300"><code>// Turn 1: Send tools + initial prompt
+POST /v1/responses
+{
+  "model": "gpt-5",
+  "tools": [
+    {"type": "web_search"},
+    {"type": "function", "function": {
+      "name": "get_weather",
+      "description": "Get weather for a city",
+      "parameters": { "type": "object",
+        "properties": { "city": {"type": "string"} },
+        "required": ["city"]
+      }
+    }}
+    // ... 48 more tool definitions
+  ],
+  "input": "What is the weather in Paris?"
+}
+// Response includes: "id": "resp_abc123"
+
+// Turn 2+: Just reference previous response
+POST /v1/responses
+{
+  "model": "gpt-5",
+  "previous_response_id": "resp_abc123",
+  "input": "How about London?"
+}
+// Tools are remembered — no need to resend 50 schemas</code></pre>
+                    <div class="mt-3 grid md:grid-cols-2 gap-3">
+                        <div class="p-2 bg-white rounded text-sm">
+                            <strong class="text-emerald-700">Solves:</strong> Per-turn resending overhead. Tools persist server-side. Unchanged portions benefit from prompt caching (discounted token rate, ~50% off).
+                        </div>
+                        <div class="p-2 bg-white rounded text-sm">
+                            <strong class="text-yellow-700">Does NOT solve:</strong> Context bloat. All 50 tool schemas still occupy the context window and are processed by the model — they're just cached cheaper, not removed.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5.3b: Meta-Tool Registry -->
+                <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200 mb-4">
+                    <h4 class="font-bold text-emerald-800 mb-2">Community Pattern: Meta-Tool Registry (for Context Bloat)</h4>
+                    <p class="text-sm text-gray-700 mb-3">For apps with 50+ tools where context bloat degrades accuracy, the community pattern is a <strong>meta-tool registry</strong> with three functions. This is NOT built into the API.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 mb-1">1. list_tools</h4>
+                        <p class="text-xs text-gray-600">Returns names and short descriptions of all available tools.</p>
+                    </div>
+                    <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 mb-1">2. describe_tool</h4>
+                        <p class="text-xs text-gray-600">Returns full schema and docs for a specific tool by name.</p>
+                    </div>
+                    <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 mb-1">3. run_tool</h4>
+                        <p class="text-xs text-gray-600">Executes a tool by name with provided arguments.</p>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold text-gray-700 mb-2">Meta-Function Definitions</h4>
+                <pre class="code-openai p-4 text-green-300"><code>// System prompt: "Discover tools before calling them.
+//   Use list_tools first, then describe_tool, then run_tool."
+
+"tools": [
+  {
+    "type": "function",
+    "function": {
+      "name": "list_tools",
+      "description": "List all available tools with short descriptions",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Optional category filter (e.g. weather, travel)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "describe_tool",
+      "description": "Get full schema and documentation for a tool",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "Name of the tool to describe"
+          }
+        },
+        "required": ["tool_name"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "run_tool",
+      "description": "Execute a tool with the given arguments",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string"},
+          "arguments": {
+            "type": "object",
+            "description": "Arguments matching the tool schema"
+          }
+        },
+        "required": ["tool_name", "arguments"]
+      }
+    }
+  }
+]</code></pre>
+
+                <div class="mt-4 grid md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm">
+                        <strong class="text-emerald-800">Advantages:</strong>
+                        <ul class="list-disc list-inside text-gray-700 mt-1 space-y-1">
+                            <li>Works with any OpenAI model</li>
+                            <li>Full control over search logic</li>
+                            <li>Can add caching, analytics, auth</li>
+                            <li>Combines well with <code class="text-xs">previous_response_id</code></li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                        <strong class="text-yellow-800">Disadvantages:</strong>
+                        <ul class="list-disc list-inside text-gray-700 mt-1 space-y-1">
+                            <li>App-level, NOT built into API</li>
+                            <li>Extra round-trips (list, describe, run)</li>
+                            <li>Must build and maintain yourself</li>
+                            <li>No deferred loading from context</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                    <strong>Bottom line:</strong> OpenAI's <code>previous_response_id</code> solves multi-turn resending and enables prompt caching for cheaper repeated tokens. OpenAI also offers <code>allowed_tools</code> in <code>tool_choice</code> to restrict which tools the model may use per turn — but this only restricts selection, it does <em>not</em> remove unused tool definitions from context. For the context bloat / accuracy problem (50+ tools confusing the model), you need the app-level meta-tool registry — OpenAI has no API-native equivalent to Anthropic's <code>defer_loading</code> which actually removes tools from the model's view.
+                </div>
+            </div>
+
+            <!-- 5.4 Programmatic Tool Calling (Anthropic) -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.4 Programmatic Tool Calling <span class="anthropic-badge">Anthropic</span></h3>
+                <p class="text-sm text-gray-600 mb-4">A major Anthropic feature where Claude orchestrates tools by <strong>writing Python code</strong> that calls them in a sandboxed Code Execution environment. Intermediate results stay in code, NOT in model context, dramatically reducing token usage.</p>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 class="font-bold text-red-800 mb-2">Traditional: 20 Tool Calls</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>20 sequential tool_use blocks</li>
+                            <li>Each result appended to context</li>
+                            <li>~200KB total context growth</li>
+                            <li>Model re-reads everything each turn</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <h4 class="font-bold text-green-800 mb-2">Programmatic: 1 Code Block</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>1 code_execution block with Python</li>
+                            <li>Tool calls happen inside sandbox</li>
+                            <li>~1KB final result returned</li>
+                            <li>Supports parallel via asyncio.gather()</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold text-gray-700 mb-2">Enabling Programmatic Tool Calling</h4>
+                <pre class="code-anthropic p-4 text-amber-200"><code>POST /v1/messages
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 8096,
+  "tools": [
+    {
+      "type": "code_execution_20250522"
+    },
+    {
+      "name": "get_budget_item",
+      "description": "Get budget details for a department",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "department": {"type": "string"},
+          "quarter": {"type": "string"}
+        },
+        "required": ["department", "quarter"]
+      },
+      "allowed_callers": ["code_execution_20250825"]
+    },
+    {
+      "name": "check_compliance",
+      "description": "Check if spending is within compliance limits",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "department": {"type": "string"},
+          "amount": {"type": "number"}
+        },
+        "required": ["department", "amount"]
+      },
+      "allowed_callers": ["code_execution_20250825"]
+    }
+  ],
+  "messages": [
+    {"role": "user", "content": "Check budget compliance for all 10 departments in Q3"}
+  ]
+}</code></pre>
+
+                <h4 class="font-semibold text-gray-700 mt-4 mb-2">What Claude Generates (Inside Sandbox)</h4>
+                <pre class="p-4 bg-gray-900 text-gray-200 rounded-lg"><code># Claude writes this Python code inside the sandbox
+import asyncio
+
+departments = [
+    "Engineering", "Marketing", "Sales", "HR", "Finance",
+    "Legal", "Operations", "Support", "Product", "Design"
+]
+
+# Parallel tool calls via asyncio
+async def check_all():
+    budgets = await asyncio.gather(*[
+        get_budget_item(department=d, quarter="Q3")
+        for d in departments
+    ])
+    results = await asyncio.gather(*[
+        check_compliance(department=d, amount=b["spent"])
+        for d, b in zip(departments, budgets)
+    ])
+    return [
+        {"dept": d, "budget": b["allocated"],
+         "spent": b["spent"], "compliant": r["compliant"]}
+        for d, b, r in zip(departments, budgets, results)
+    ]
+
+summary = asyncio.run(check_all())
+# Only the final summary (~1KB) goes back to model context</code></pre>
+
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                    <strong>Performance gains:</strong> 37% token reduction (43,588 down to 27,297 tokens on complex tasks). Knowledge retrieval improved 25.6% to 28.5%; GIA benchmarks improved 46.5% to 51.2%.
+                </div>
+
+                <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                    <strong>OpenAI equivalent:</strong> Not directly comparable. OpenAI's <code>shell</code> tool runs commands in a hosted Debian 12 container, and <code>code_interpreter</code> runs model-generated code — but <strong>neither can call user-defined function tools from within the sandbox</strong>. The shell tool executes shell commands (e.g., <code>python script.py</code>, <code>ls -l</code>), while Anthropic's PTC lets the model write Python that invokes <code>get_weather()</code> or <code>check_compliance()</code> — actual user-defined tools — from within code execution. OpenAI's Responses API can chain multiple tool calls in a single response (and executes built-in tools like <code>web_search</code> automatically), but user-defined tool orchestration still requires separate API round-trips.
+                </div>
+            </div>
+
+            <!-- 5.5 Tool Use Examples (Anthropic) -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.5 Tool Use Examples <span class="anthropic-badge">Anthropic</span></h3>
+                <p class="text-sm text-gray-600 mb-4">Anthropic supports an <code class="bg-gray-100 px-1 rounded">input_examples</code> field in tool definitions that shows the model correct formats, conventions, and optional parameter patterns. This significantly improves accuracy on complex parameter handling.</p>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">Before: Schema Only</h4>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>{
+  "name": "search_products",
+  "description": "Search product catalog",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string"},
+      "filters": {
+        "type": "object",
+        "properties": {
+          "price_min": {"type": "number"},
+          "price_max": {"type": "number"},
+          "category": {"type": "string"},
+          "in_stock": {"type": "boolean"}
+        }
+      },
+      "sort_by": {
+        "type": "string",
+        "enum": ["relevance","price_asc",
+                 "price_desc","rating"]
+      }
+    },
+    "required": ["query"]
+  }
+}
+
+// Accuracy: 72% correct parameters</code></pre>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">After: Schema + Examples</h4>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>{
+  "name": "search_products",
+  "description": "Search product catalog",
+  "input_schema": { ... },
+  "input_examples": [
+    {
+      "query": "wireless headphones",
+      "filters": {
+        "price_max": 100,
+        "category": "electronics",
+        "in_stock": true
+      },
+      "sort_by": "rating"
+    },
+    {
+      "query": "running shoes size 10",
+      "filters": {
+        "price_min": 50,
+        "price_max": 150
+      },
+      "sort_by": "price_asc"
+    }
+  ]
+}
+
+
+
+// Accuracy: 90% correct parameters</code></pre>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                    <strong>Improvement:</strong> 72% to 90% accuracy on complex parameter handling. Especially useful for tools with nested objects, optional fields, or specific format conventions.
+                </div>
+
+                <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                    <strong>OpenAI equivalent:</strong> OpenAI does not have a dedicated <code>input_examples</code> field. The recommended approach is to include examples in the function <code>description</code> string or in the system prompt.
+                </div>
+            </div>
+
+            <!-- 5.6 tool_choice Comparison -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.6 tool_choice Comparison <span class="both-badge">Both</span></h3>
+                <p class="text-sm text-gray-600 mb-4">Both providers let you control how the model selects tools, but the syntax differs.</p>
+
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr class="bg-purple-50">
+                                <th class="text-purple-800">Behavior</th>
+                                <th class="text-emerald-800">OpenAI</th>
+                                <th class="text-amber-800">Anthropic</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">Model decides</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">"auto"</code> (default)</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "auto"}</code> (default)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Must use a tool</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">"required"</code></td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "any"}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">No tools</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">"none"</code></td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "none"}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Force specific tool</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "function", "name": "fn"}</code></td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "tool", "name": "fn"}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Restrict to subset</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "allowed_tools", "tools": [...]}</code> (limited GPT-5 support with built-in tools)</td>
+                                <td>Not needed — <code class="bg-gray-100 px-1 rounded text-xs">defer_loading</code> keeps irrelevant tools out of context entirely</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2"><span class="openai-badge">OpenAI</span></h4>
+                        <pre class="code-openai p-4 text-green-300"><code>// Force a specific function
+{
+  "tool_choice": {
+    "type": "function",
+    "function": {
+      "name": "get_weather"
+    }
+  }
+}
+
+// Must call at least one tool
+{
+  "tool_choice": "required"
+}
+
+// Note: "required" has spotty
+// support on GPT-5</code></pre>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2"><span class="anthropic-badge">Anthropic</span></h4>
+                        <pre class="code-anthropic p-4 text-amber-200"><code>// Force a specific tool
+{
+  "tool_choice": {
+    "type": "tool",
+    "name": "get_weather"
+  }
+}
+
+// Must call at least one tool
+{
+  "tool_choice": {
+    "type": "any"
+  }
+}
+
+// No tools (added 2025)
+{
+  "tool_choice": {
+    "type": "none"
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5.7 Architecture Diagram — Full Tool Discovery Flow -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.7 Full Tool Discovery Flow <span class="anthropic-badge">Anthropic</span></h3>
+                <p class="text-sm text-gray-600 mb-4">End-to-end sequence showing how Anthropic's Tool Search Tool works with deferred loading.</p>
+
+                <div class="mermaid text-sm">
+sequenceDiagram
+    participant App as Your App
+    participant API as Anthropic API
+    participant Claude as Claude Model
+
+    App->>API: Request with tool_search_tool + 100 deferred tools
+    Note over API: Strips deferred tools from context
+    API->>Claude: Only search tool + non-deferred tools visible
+
+    Claude->>API: tool_use: tool_search_tool (query: "weather")
+    Note over API: Searches deferred tools by name and description
+    API->>Claude: tool_result: references to get_weather, get_forecast
+
+    Note over Claude: Tool definitions expanded in context
+    Claude->>API: tool_use: get_weather (city: "Paris")
+    API->>App: tool_use: get_weather (city: "Paris")
+    App->>API: tool_result: {"temp": 22, "condition": "sunny"}
+    API->>Claude: tool_result: {"temp": 22, "condition": "sunny"}
+
+    Claude->>API: Final text response
+    API->>App: "The weather in Paris is 22C and sunny"
+                </div>
+
+                <div class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                    <strong>Key detail:</strong> The 100 deferred tool schemas never enter Claude's context window. Only the matched tools are expanded after a search, keeping the context lean throughout the conversation.
+                </div>
+            </div>
+
+            <!-- 5.8 Comparison Summary -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">5.8 Side-by-Side Summary <span class="both-badge">Both</span></h3>
+
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr class="bg-purple-50">
+                                <th class="text-purple-800">Feature</th>
+                                <th class="text-emerald-800">OpenAI</th>
+                                <th class="text-amber-800">Anthropic</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">Tool Discovery</td>
+                                <td>App-level meta-tool registry (community pattern); no API-native equivalent to defer_loading</td>
+                                <td>First-party <code class="bg-gray-100 px-1 rounded text-xs">tool_search_tool</code> (API-native) with <code class="bg-gray-100 px-1 rounded text-xs">defer_loading</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Deferred Loading</td>
+                                <td>Not supported — all tool schemas occupy context. <code class="bg-gray-100 px-1 rounded text-xs">allowed_tools</code> restricts which tools the model may call, but does not remove unused schemas from context</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">defer_loading: true</code> removes tools from context entirely until searched</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Programmatic Tool Calling</td>
+                                <td>No equivalent — <code class="bg-gray-100 px-1 rounded text-xs">shell</code> and <code class="bg-gray-100 px-1 rounded text-xs">code_interpreter</code> run code in a sandbox but cannot call user-defined function tools from within it</td>
+                                <td>Model writes Python that calls user-defined tools (<code class="bg-gray-100 px-1 rounded text-xs">get_weather()</code>, etc.) inside Code Execution sandbox</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Tool Use Examples</td>
+                                <td>Via description string or system prompt</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">input_examples</code> field in tool definition</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">tool_choice syntax</td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">"auto"</code>, <code class="bg-gray-100 px-1 rounded text-xs">"required"</code>, <code class="bg-gray-100 px-1 rounded text-xs">"none"</code>, <code class="bg-gray-100 px-1 rounded text-xs">allowed_tools</code></td>
+                                <td><code class="bg-gray-100 px-1 rounded text-xs">{"type": "auto"}</code>, <code class="bg-gray-100 px-1 rounded text-xs">{"type": "any"}</code>, <code class="bg-gray-100 px-1 rounded text-xs">{"type": "none"}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Stateful Tool Persistence</td>
+                                <td>Responses API remembers tools across turns via <code class="bg-gray-100 px-1 rounded text-xs">previous_response_id</code> — send once, reuse for 30+ days</td>
+                                <td>Messages API is stateless — tools must be sent every request (but <code class="bg-gray-100 px-1 rounded text-xs">defer_loading</code> keeps deferred ones out of context)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Token Savings</td>
+                                <td>Stateful API benefits from <strong>prompt caching</strong> — unchanged tool defs and prior turns are billed at a discounted rate (~50% off). You save on network bandwidth and get cheaper cached-token pricing, but the full context chain is still processed by the model each turn.</td>
+                                <td>Up to 85% context reduction (tool search removes deferred tools entirely) + 37% (programmatic tool calling keeps intermediate results out of context)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                    <strong>Key distinction:</strong> OpenAI's Responses API solves the "resending tools every turn" problem via server-side state (<code>previous_response_id</code>), and unchanged tool definitions benefit from <strong>prompt caching</strong> (discounted token rate). However, all 50+ tool definitions still occupy the context window and are processed by the model on every turn. Anthropic's <code>defer_loading</code> + Tool Search takes a fundamentally different approach: deferred tools are <em>removed from the context window entirely</em> until discovered, so the model never sees them — resulting in both token savings and better tool selection accuracy.
+                </div>
+
+                <!-- Comparison Architecture Diagram -->
+                <div class="mermaid text-sm mt-4">
+graph TB
+    subgraph OpenAI["OpenAI: Two Mechanisms"]
+        OA["Responses API"] --> OB["previous_response_id"]
+        OB --> OC["Tools persist server-side"]
+        OD["Meta-Tool Registry"] --> OE["list, describe, run"]
+        OE --> OF["App-level discovery"]
+    end
+    subgraph Anthropic["Anthropic: API-Native"]
+        AA["Messages API"] --> AB["defer_loading: true"]
+        AB --> AC["tool_search_tool"]
+        AC --> AD["Only matched tools in context"]
+    end
+
+    style OA fill:#d1fae5,stroke:#10a37f
+    style OB fill:#d1fae5,stroke:#10a37f
+    style OC fill:#d1fae5,stroke:#10a37f
+    style OD fill:#d1fae5,stroke:#10a37f
+    style OE fill:#d1fae5,stroke:#10a37f
+    style OF fill:#d1fae5,stroke:#10a37f
+    style AA fill:#fef3c7,stroke:#d4a574
+    style AB fill:#fef3c7,stroke:#d4a574
+    style AC fill:#fef3c7,stroke:#d4a574
+    style AD fill:#fef3c7,stroke:#d4a574
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div class="nav-controls">
+        <a href="level4-built-in-tools.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 4: Built-in Tools</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <a href="level6-agentic-patterns-tools.html" class="nav-btn nav-btn-primary" style="text-decoration:none">Level 6: Agents &mdash; LLMs + Tools + Structured Output &rarr;</a>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight': window.location.href="level6-agentic-patterns-tools.html"; break;
+                case 'ArrowLeft': window.location.href="level4-built-in-tools.html"; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 5: Tool Discovery & Advanced Tool Use';
+    </script>
+</body>
+</html>

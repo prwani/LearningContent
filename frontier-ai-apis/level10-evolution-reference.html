@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 10: Evolution & Reference - Frontier AI APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        .dark { --bg: #1a1a2e; --card-bg: #16213e; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: var(--bg); color: var(--text); }
+        body.dark-mode .card { background: var(--card-bg); border-color: #2d3748; }
+        body.dark-mode pre { background: #0d1117 !important; }
+        body.dark-mode .bg-white { background: var(--card-bg) !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .openai-badge { background: linear-gradient(135deg, #10a37f, #0d8c6d); color: white;
+                        padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .anthropic-badge { background: linear-gradient(135deg, #d4a574, #c4956a); color: white;
+                           padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .both-badge { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
+                      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+                       font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .level-1 { background: #dcfce7; color: #166534; }
+        .level-2 { background: #dbeafe; color: #1e40af; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+        .level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-6 { background: #fee2e2; color: #991b1b; }
+        .level-7 { background: #ccfbf1; color: #134e4a; }
+        .level-8 { background: #fef9c3; color: #713f12; }
+        .level-9 { background: #e0e7ff; color: #3730a3; }
+        .level-10 { background: #fce7f3; color: #831843; }
+
+        .collapsible-header { cursor: pointer; user-select: none; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .collapsible-content.active { max-height: none; }
+
+        .level-slide { position: absolute; left: -9999px; opacity: 0; width: 100%; }
+        .level-slide.active-slide { position: relative; left: 0; opacity: 1; }
+
+        .nav-controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30,30,60,0.95);
+                        backdrop-filter: blur(10px); padding: 12px; z-index: 50;
+                        display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+                   transition: all 0.2s; border: none; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn-primary { background: #8b5cf6; color: white; }
+        .nav-btn-secondary { background: #374151; color: #d1d5db; }
+
+        pre { border-radius: 8px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; }
+        code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        .code-openai { background: #0d2818 !important; border-left: 4px solid #10a37f; }
+        .code-anthropic { background: #2d1810 !important; border-left: 4px solid #d4a574; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px 12px; border-top: 1px solid #e5e7eb; font-size: 0.875rem; }
+        body.dark-mode .comparison-table td { border-top-color: #374151; }
+        .comparison-table tr:hover td { background: rgba(139,92,246,0.05); }
+
+        .tab-btn { padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600;
+                   border: 1px solid #e5e7eb; border-bottom: none; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-content.active-tab-content { display: block; }
+
+        .flow-step { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .flow-step::before { content: attr(data-step); position: absolute; left: 0; top: 0;
+                             width: 28px; height: 28px; background: #8b5cf6; color: white;
+                             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                             font-size: 0.8rem; font-weight: 700; }
+        .flow-step::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -20px;
+                            width: 2px; background: #c4b5fd; }
+        .flow-step:last-child::after { display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        .level-slide { position: relative !important; left: 0 !important; opacity: 1 !important; display: block !important; width: 100% !important; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+
+    <!-- Header -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div id="headerContent" class="collapsible-content active">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Frontier AI APIs</h1>
+                        <p class="text-purple-100 text-sm">OpenAI vs Anthropic - Complete Visual Guide</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode (D)">🌓</button>
+                        <button onclick="toggleHeader()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle header (H)">▲</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    <span class="bg-white/20 px-2 py-1 rounded">Level 10 of 10</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Side-by-Side Comparisons</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Real API Examples</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">Evolution Timeline</span>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div id="progressFill" class="bg-yellow-400 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <input type="text" id="searchBox" placeholder="🔍 Search topics... ( / )" class="mt-2 w-full px-3 py-1.5 rounded-lg bg-white/20 text-white placeholder-purple-200 text-sm border border-white/30 focus:outline-none focus:border-white">
+            </div>
+            <div id="headerCollapsed" class="hidden flex items-center justify-between">
+                <span class="font-bold">Frontier AI APIs - OpenAI vs Anthropic</span>
+                <div class="flex gap-2">
+                    <span id="slideIndicator" class="text-sm bg-white/20 px-2 py-1 rounded"></span>
+                    <button onclick="toggleDarkMode()" class="px-2 py-1 bg-white/20 rounded text-sm">🌓</button>
+                    <button onclick="toggleHeader()" class="px-2 py-1 bg-white/20 rounded text-sm">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <section class="level-slide active-slide" data-slide="7">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="level-badge level-10">LEVEL 10</span>
+                <h2 class="text-2xl font-bold text-gray-800">Evolution & Reference</h2>
+            </div>
+
+            <!-- 8.1 API Evolution Timeline -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">10.1 API Evolution Timeline</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200">
+                        <h4 class="font-bold text-emerald-800 text-lg mb-4">OpenAI</h4>
+                        <div class="space-y-3">
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2023</span>
+                                <div class="text-sm"><strong>Chat Completions API</strong> launched. Function calling added.</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2024</span>
+                                <div class="text-sm">Parallel tool calls. JSON mode &amp; structured outputs. <strong>Assistants API</strong> (threads + tools).</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-emerald-700 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2025</span>
+                                <div class="text-sm"><strong>Responses API</strong> launched. Built-in tools (web, code, files). MCP integration. Assistants API deprecated. <strong>Agent Skills adopted</strong>. Computer use (preview).</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-emerald-800 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2026</span>
+                                <div class="text-sm">Responses API becomes primary. <strong>Open Responses specification</strong> with partners. <strong>Shell tool + Skills + Compaction</strong>.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg border-2 border-amber-200">
+                        <h4 class="font-bold text-amber-800 text-lg mb-4">Anthropic</h4>
+                        <div class="space-y-3">
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2023</span>
+                                <div class="text-sm"><strong>Messages API</strong> launched. Basic text completions.</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2024</span>
+                                <div class="text-sm"><strong>Tool use</strong> added. Vision/image support. <strong>Computer use</strong> (beta).</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-amber-700 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2025</span>
+                                <div class="text-sm">Advanced tool use. Tool search &amp; programmatic calling. <strong>MCP native support</strong>. <strong>Agent Skills (open standard)</strong>.</div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <span class="bg-amber-800 text-white text-xs font-bold px-2 py-1 rounded min-w-[48px] text-center">2026</span>
+                                <div class="text-sm"><strong>Opus 4.6</strong> with 1M context. <strong>Knowledge Work Plugins (11 role-based)</strong>. Context editing &amp; compaction.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8.2 Master Comparison -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">10.2 Master Comparison Table</h3>
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr class="bg-purple-100">
+                                <th class="text-purple-800">Feature</th>
+                                <th class="text-emerald-800">OpenAI Chat Completions</th>
+                                <th class="text-emerald-800">OpenAI Responses</th>
+                                <th class="text-amber-800">Anthropic Messages</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">Endpoint</td>
+                                <td><code>/v1/chat/completions</code></td>
+                                <td><code>/v1/responses</code></td>
+                                <td><code>/v1/messages</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Input field</td>
+                                <td><code>messages[]</code></td>
+                                <td><code>input</code> (string or array)</td>
+                                <td><code>messages[]</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">System prompt</td>
+                                <td>In messages array</td>
+                                <td>Top-level <code>instructions</code></td>
+                                <td>Top-level <code>system</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Statefulness</td>
+                                <td>Stateless</td>
+                                <td>Stateful (<code>store</code> + <code>previous_response_id</code>)</td>
+                                <td>Stateless (prompt caching available)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">max_tokens</td>
+                                <td>Optional</td>
+                                <td>Optional</td>
+                                <td><strong>Required</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Response text at</td>
+                                <td><code>choices[0].message.content</code></td>
+                                <td><code>output[].content[].text</code></td>
+                                <td><code>content[0].text</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Tool schema field</td>
+                                <td><code>function.parameters</code></td>
+                                <td><code>parameters</code></td>
+                                <td><code>input_schema</code></td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Tool call args</td>
+                                <td>JSON string</td>
+                                <td>JSON string</td>
+                                <td>Parsed object</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Tool result role</td>
+                                <td><code>"role": "tool"</code></td>
+                                <td>Output item</td>
+                                <td><code>"role": "user"</code> + tool_result block</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Built-in tools</td>
+                                <td>None</td>
+                                <td>web, code, files, images, MCP</td>
+                                <td>computer use (beta)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Streaming</td>
+                                <td>SSE</td>
+                                <td>SSE</td>
+                                <td>SSE</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Structured output</td>
+                                <td><code>response_format</code></td>
+                                <td><code>text.format</code></td>
+                                <td>Via forced tool_choice</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Parallel generations</td>
+                                <td>Yes (<code>n</code> param)</td>
+                                <td>No</td>
+                                <td>No</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">Status</td>
+                                <td>Supported (legacy)</td>
+                                <td>Recommended for new projects</td>
+                                <td>Primary API</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 8.3 Quick Reference Cheat Sheet -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">10.3 Quick Reference — Code Cheat Sheet</h3>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- OpenAI Side -->
+                    <div>
+                        <h4 class="font-bold text-emerald-700 text-lg mb-3">OpenAI</h4>
+                        <div class="space-y-3">
+                            <div class="flow-step" data-step="1">
+                                <p class="font-semibold text-sm">Simple call (Chat Completions)</p>
+                                <pre class="code-openai p-2 text-green-300 text-xs mt-1"><code>openai.chat.completions.create(
+  model="gpt-4o",
+  messages=[{"role":"user","content":"Hi"}]
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="2">
+                                <p class="font-semibold text-sm">Simple call (Responses API)</p>
+                                <pre class="code-openai p-2 text-green-300 text-xs mt-1"><code>openai.responses.create(
+  model="gpt-4o",
+  input="Hi"
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="3">
+                                <p class="font-semibold text-sm">With tools</p>
+                                <pre class="code-openai p-2 text-green-300 text-xs mt-1"><code>openai.responses.create(
+  model="gpt-4o",
+  input="Search for...",
+  tools=[{"type":"web_search"}]
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="4">
+                                <p class="font-semibold text-sm">Multi-turn (stateful)</p>
+                                <pre class="code-openai p-2 text-green-300 text-xs mt-1"><code>r2 = openai.responses.create(
+  model="gpt-4o",
+  input="Follow up...",
+  previous_response_id=r1.id
+)</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anthropic Side -->
+                    <div>
+                        <h4 class="font-bold text-amber-700 text-lg mb-3">Anthropic</h4>
+                        <div class="space-y-3">
+                            <div class="flow-step" data-step="1">
+                                <p class="font-semibold text-sm">Simple call</p>
+                                <pre class="code-anthropic p-2 text-amber-200 text-xs mt-1"><code>anthropic.messages.create(
+  model="claude-sonnet-4-5",
+  max_tokens=1024,
+  messages=[{"role":"user","content":"Hi"}]
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="2">
+                                <p class="font-semibold text-sm">With system prompt</p>
+                                <pre class="code-anthropic p-2 text-amber-200 text-xs mt-1"><code>anthropic.messages.create(
+  model="claude-sonnet-4-5",
+  max_tokens=1024,
+  system="You are a DNS expert.",
+  messages=[{"role":"user","content":"Hi"}]
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="3">
+                                <p class="font-semibold text-sm">With tools</p>
+                                <pre class="code-anthropic p-2 text-amber-200 text-xs mt-1"><code>anthropic.messages.create(
+  model="claude-sonnet-4-5",
+  max_tokens=1024,
+  messages=[...],
+  tools=[{"name":"get_weather",
+          "input_schema":{...}}]
+)</code></pre>
+                            </div>
+                            <div class="flow-step" data-step="4">
+                                <p class="font-semibold text-sm">Multi-turn (manual)</p>
+                                <pre class="code-anthropic p-2 text-amber-200 text-xs mt-1"><code>messages.append(
+  {"role":"assistant","content":r1.content})
+messages.append(
+  {"role":"user","content":"Follow up..."})
+r2 = anthropic.messages.create(
+  model="claude-sonnet-4-5",
+  max_tokens=1024,
+  messages=messages
+)</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8.4 When to Use What -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-purple-700">10.4 Decision Guide — When to Use What</h3>
+                <div class="mermaid">
+flowchart TD
+    Start["What are you building?"] --> Q1{"Need tools/agents?"}
+    Q1 -->|No| Q2{"Simple chatbot?"}
+    Q2 -->|Yes| CC["OpenAI Chat Completions<br/>or Anthropic Messages"]
+    Q2 -->|"Complex, multi-turn"| RA["OpenAI Responses API<br/>Stateful + efficient"]
+
+    Q1 -->|Yes| Q3{"Built-in tools enough?<br/>web search, code, files"}
+    Q3 -->|Yes| RA2["OpenAI Responses API<br/>Zero-code tool execution"]
+    Q3 -->|"Need custom functions"| Q4{"Need desktop automation?"}
+    Q4 -->|Yes| ANT["Anthropic Messages API<br/>Computer use tool"]
+    Q4 -->|No| BOTH["Either provider works<br/>Custom tool calling"]
+
+    style Start fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+    style CC fill:#dcfce7,stroke:#10a37f,stroke-width:2px
+    style RA fill:#bbf7d0,stroke:#10a37f,stroke-width:3px
+    style RA2 fill:#bbf7d0,stroke:#10a37f,stroke-width:3px
+    style ANT fill:#fef3c7,stroke:#d4a574,stroke-width:3px
+    style BOTH fill:#f3e8ff,stroke:#8b5cf6,stroke-width:2px
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="nav-controls">
+        <a href="level9-plugins-deep-dive.html" class="nav-btn nav-btn-secondary" style="text-decoration:none">&larr; Level 9: Plugins &mdash; Deep Dive</a>
+        <a href="index.html" class="nav-btn" style="text-decoration:none; background:#6d28d9; color:white; padding:8px 14px;">🏠 Index</a>
+        <span></span>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true, theme: 'default',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+            sequence: { useMaxWidth: true }
+        });
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function toggleHeader() {
+            document.getElementById('headerContent').classList.toggle('active');
+            document.getElementById('headerCollapsed').classList.toggle('hidden');
+        }
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.display = c.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            switch(e.key) {
+                case 'ArrowRight':  break;
+                case 'ArrowLeft': window.location.href="level9-plugins-deep-dive.html"; break;
+                case 'd': case 'D': toggleDarkMode(); break;
+                case 'h': case 'H': toggleHeader(); break;
+                case '/': e.preventDefault(); document.getElementById('searchBox').focus(); break;
+            }
+        });
+        var si = document.getElementById('slideIndicator');
+        if (si) si.textContent = 'Level 10: Evolution & Reference';
+    </script>
+</body>
+</html>
