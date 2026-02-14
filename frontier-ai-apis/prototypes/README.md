@@ -1,6 +1,6 @@
 # Frontier AI APIs — Working Python Prototypes
 
-Hands-on Python demos for every level of the Frontier AI APIs curriculum.  
+Hands-on Python demos for every level of the Frontier AI APIs curriculum.
 Each script is self-contained and prints **token usage** (input, output, cached) for every API call.
 
 ## Quick Start
@@ -21,16 +21,27 @@ python level01_basics/openai_chat_completion.py
 
 | Level | Directory | Scripts | What You Learn |
 |-------|-----------|---------|----------------|
-| 1 | `level01_basics/` | `openai_chat_completion.py`, `openai_responses_api.py`, `anthropic_messages.py` | Single-turn API calls — Chat Completions vs Responses vs Messages |
+| 1 | `level01_basics/` | `openai_chat_completion.py`, `openai_responses_api.py`, `anthropic_messages.py` | Single-turn: Chat Completions vs Responses API vs Messages API |
 | 2 | `level02_multi_turn/` | `openai_chat_multi_turn.py`, `openai_responses_stateful.py`, `anthropic_messages_multi_turn.py` | Multi-turn: stateless history, stateful `previous_response_id`, prompt caching |
-| 3 | `level03_function_calling/` | `openai_function_calling.py`, `openai_responses_function.py`, `anthropic_tool_use.py` | Function calling: tool definitions, argument parsing, result handling |
-| 4 | `level04_builtin_tools/` | `openai_web_search.py`, `openai_code_interpreter.py`, `anthropic_code_execution.py` | Built-in tools: web search, code interpreter, code execution |
-| 5 | `level05_tool_discovery/` | `openai_meta_tool_registry.py`, `anthropic_tool_search.py` | Scaling 50+ tools: meta-tool registry, tool search + defer_loading |
-| 6 | `level06_agents/` | `openai_agentic_loop.py`, `anthropic_agentic_loop.py` | Complete agentic loop + structured output |
-| 7 | `level07_skills/` | `skill_template_demo.py`, `openai_shell_tool.py` | SKILL.md standard, shell tool containers |
-| 8 | `level08_full_stack/` | `openai_full_agent.py`, `anthropic_full_agent.py` | Full stack: skills + tools + MCP + structured output |
-| 9 | `level09_plugins/` | `plugin_loader.py`, `anthropic_plugin_demo.py` | Plugin architecture: manifest parsing, MCP routing |
-| 10 | `level10_reference/` | `unified_api_demo.py`, `decision_tree.py` | Side-by-side comparison, API decision tree |
+| 3 | `level03_function_calling/` | `openai_function_calling.py`, `openai_responses_function.py`, `anthropic_tool_use.py`, **`claude_agent_sdk_tools.py`** | Function calling (3+ turns): tool definitions, arg parsing, **Agent SDK tool loop** |
+| 4 | `level04_builtin_tools/` | `openai_chat_builtin_tools.py`, `openai_web_search.py`, `openai_code_interpreter.py`, `anthropic_code_execution.py`, **`claude_agent_sdk_tools.py`** | Built-in tools (3+ turns): web search, code interpreter, **Agent SDK built-in tools** |
+| 5 | `level05_tool_discovery/` | `openai_meta_tool_registry.py`, `openai_responses_tool_discovery.py`, `anthropic_tool_search.py`, **`claude_agent_sdk_discovery.py`** | Scaling 50+ tools (3+ turns): meta-tool registry, defer_loading, **Agent SDK MCP discovery** |
+| 6 | `level06_agents/` | `openai_agentic_loop.py`, `anthropic_agentic_loop.py`, **`claude_agent_sdk_agent.py`** | Agentic loops + structured output (3+ turns), **Agent SDK autonomous agent** |
+| 7 | `level07_skills/` | `skill_template_demo.py`, `openai_chat_skills.py`, `openai_shell_tool.py`, `anthropic_messages_skills.py`, **`claude_agent_sdk_skills.py`** | SKILL.md standard (3+ turns), skills + tools, **Agent SDK skills** |
+| 8 | `level08_full_stack/` | `openai_full_agent.py`, `anthropic_full_agent.py`, **`claude_agent_sdk_full.py`** | Full stack: skills + tools + MCP (3+ turns), **Agent SDK full stack** |
+| 9 | `level09_plugins/` | `plugin_loader.py`, `openai_plugin_pattern.py`, `anthropic_plugin_demo.py`, **`claude_agent_sdk_plugin.py`** | Plugin architecture (3+ turns): manifest parsing, MCP routing, **Agent SDK plugins** |
+| 10 | `level10_reference/` | `unified_api_demo.py`, `decision_tree.py`, **`agent_sdk_comparison.py`** | Side-by-side comparison, decision tree, **Messages API vs Agent SDK** |
+
+## API Coverage per Level
+
+Every level (except 1-2) includes examples for all three approaches:
+
+| Approach | Package | Levels |
+|----------|---------|--------|
+| **OpenAI Chat Completions** | `openai` | 1-10 |
+| **OpenAI Responses API** | `openai` | 1-10 |
+| **Anthropic Messages API** | `anthropic` | 1-10 |
+| **Claude Agent SDK** | `claude-agent-sdk` | 3-10 |
 
 ## MCP Servers (from [toolscout](https://github.com/prwani/toolscout))
 
@@ -38,7 +49,7 @@ Three sample MCP servers are included for demos that need external tools:
 
 | Server | Port | Domain | Tools |
 |--------|------|--------|-------|
-| `server1.py` | 8000 | General | Users, weather, email, restaurant, calendar, translate, etc. (25 tools) |
+| `server1.py` | 8000 | General | Users, weather, email, restaurant, calendar, etc. (25 tools) |
 | `server2.py` | 9000 | Library | Books, members, lending, overdue tracking (12 tools) |
 | `server3.py` | 10000 | Stocks | Buy/sell, portfolio, watchlist, market status (15 tools) |
 
@@ -52,13 +63,17 @@ cd mcp_servers && bash start_servers.sh
 | Variable | Required For | Description |
 |----------|-------------|-------------|
 | `OPENAI_API_KEY` | All OpenAI demos | OpenAI API key |
-| `ANTHROPIC_API_KEY` | All Anthropic demos | Anthropic API key |
+| `ANTHROPIC_API_KEY` | All Anthropic + Agent SDK demos | Anthropic API key |
 
 ## Token Usage
 
 Every script prints token usage after each API call:
 
 ```
+Environment:
+  OPENAI_API_KEY: ✓ set
+  ANTHROPIC_API_KEY: ✓ set
+
 Token Usage:
   Input tokens:  42
   Output tokens: 128
@@ -66,31 +81,9 @@ Token Usage:
   Cached input:  0
 ```
 
-For Anthropic (with prompt caching):
-```
-Token Usage:
-  Input tokens:  38
-  Output tokens: 95
-  Cache created:  12
-  Cache read:     26
-```
+## Multi-Turn Conversations
 
-## Project Structure
-
-```
-prototypes/
-├── _common/               # Shared utilities
-│   ├── token_utils.py     # print_openai_usage(), print_anthropic_usage()
-│   └── requirements.txt   # pip dependencies
-├── level01_basics/        # Level 1: Single-turn basics
-├── level02_multi_turn/    # Level 2: Multi-turn conversations
-├── level03_function_calling/ # Level 3: Function/tool calling
-├── level04_builtin_tools/ # Level 4: Built-in tools
-├── level05_tool_discovery/ # Level 5: Scaling 50+ tools
-├── level06_agents/        # Level 6: Agentic loops
-├── level07_skills/        # Level 7: Skills & shell
-├── level08_full_stack/    # Level 8: Full agentic stack
-├── level09_plugins/       # Level 9: Plugin architecture
-├── level10_reference/     # Level 10: Comparison & decision tree
-└── mcp_servers/           # MCP servers from toolscout
-```
+Level 3 onwards, every example involves **3+ turns** to demonstrate:
+- Multi-step tool calling (e.g., weather for 3 cities)
+- Iterative refinement (e.g., build on previous code results)
+- Conversational context (e.g., follow-up questions using prior answers)

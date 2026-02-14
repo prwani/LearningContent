@@ -1,5 +1,20 @@
 """Shared token-usage helpers for OpenAI and Anthropic API responses."""
 
+import os
+
+def check_env_keys():
+    """Print which API keys are configured."""
+    keys = {
+        "OPENAI_API_KEY": bool(os.environ.get("OPENAI_API_KEY")),
+        "ANTHROPIC_API_KEY": bool(os.environ.get("ANTHROPIC_API_KEY")),
+    }
+    print("Environment:")
+    for k, v in keys.items():
+        print(f"  {k}: {'✓ set' if v else '✗ NOT SET'}")
+    print()
+    return keys
+
+
 def print_openai_usage(response, label=""):
     """Print token usage from an OpenAI ChatCompletion or Response object."""
     prefix = f"[{label}] " if label else ""

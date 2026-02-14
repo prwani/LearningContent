@@ -1,6 +1,6 @@
-"""Level 3 — OpenAI Responses API: Function Calling.
+"""Level 3 — OpenAI Responses API: Function Calling (3+ turns).
 
-Same get_weather tool but using the Responses API.
+Uses the Responses API with previous_response_id chaining for multi-turn tool use.
 Env: OPENAI_API_KEY
 """
 import os, sys, json
@@ -8,8 +8,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv; load_dotenv()
 from openai import OpenAI
-from _common.token_utils import print_openai_usage
+from _common.token_utils import print_openai_usage, check_env_keys
 
+check_env_keys()
 client = OpenAI()
 
 tools = [
@@ -20,49 +21,67 @@ tools = [
             "description": "Get current weather for a location.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "location": {"type": "string", "description": "City name"},
-                },
+                "properties": {"location": {"type": "string", "description": "City name"}},
                 "required": ["location"],
             },
         },
     }
 ]
 
+WEATHER_DATA = {
+    "tokyo": {"condition": "sunny", "temp_c": 24},
+    "london": {"condition": "cloudy", "temp_c": 14},
+    "sydney": {"condition": "warm", "temp_c": 28},
+}
+
 def get_weather(location: str) -> str:
-    return json.dumps({"location": location, "condition": "cloudy", "temp_c": 18})
+    data = WEATHER_DATA.get(location.lower(), {"condition": "unknown", "temp_c": 20})
+    return json.dumps({"location": location, **data})
 
-print("=== OpenAI Responses API — Function Calling ===\n")
+print("=== OpenAI Responses API — Function Calling (3+ turns) ===\n")
 
-# Step 1: Model decides to call the tool
+previous_id = None
+turn = 0
+
+# Initial request
 response = client.responses.create(
     model="gpt-4o-mini",
-    instructions="You are a helpful assistant.",
-    input="What's the weather in London?",
+    instructions="You are a helpful weather assistant. Check each city separately.",
+    input="What's the weather in Tokyo, London, and Sydney? Summarize which is best for outdoor activities.",
     tools=tools,
+    store=True,
 )
-print_openai_usage(response, label="Step 1 (tool selection)")
+turn += 1
+print_openai_usage(response, label=f"Turn {turn}")
 
-# Find function_call output items
-function_calls = [item for item in response.output if item.type == "function_call"]
+while turn < 6:
+    function_calls = [item for item in response.output if item.type == "function_call"]
 
-if function_calls:
-    fc = function_calls[0]
-    args = json.loads(fc.arguments)
-    print(f"Tool call: {fc.name}({args})")
+    if not function_calls:
+        print(f"\nAssistant: {response.output_text}")
+        break
 
-    result = get_weather(**args)
-    print(f"Tool result: {result}")
-
-    # Step 2: Send result back via previous_response_id
-    response2 = client.responses.create(
-        model="gpt-4o-mini",
-        previous_response_id=response.id,
-        input=[{
+    # Process all function calls and send results
+    tool_outputs = []
+    for fc in function_calls:
+        args = json.loads(fc.arguments)
+        print(f"  Tool call: {fc.name}({args})")
+        result = get_weather(**args)
+        print(f"  Result: {result}")
+        tool_outputs.append({
             "type": "function_call_output",
             "call_id": fc.call_id,
             "output": result,
-        }],
+        })
+
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        previous_response_id=response.id,
+        input=tool_outputs,
+        tools=tools,
+        store=True,
     )
-    print(f"\nAssistant: {response2.output_text}")
-    print_openai_usage(response2, label="Step 2 (final answer)")
+    turn += 1
+    print_openai_usage(response, label=f"Turn {turn}")
+
+print(f"\nTotal turns: {turn}")

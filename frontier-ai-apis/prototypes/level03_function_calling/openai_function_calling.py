@@ -1,7 +1,7 @@
-"""Level 3 — OpenAI Chat Completions: Function Calling.
+"""Level 3 — OpenAI Chat Completions: Function Calling (3+ turns).
 
-Defines a get_weather tool, handles tool_calls in the response,
-executes the function locally, and sends results back.
+Demonstrates multi-turn tool use: the user asks about weather in 3 cities,
+each requiring a separate tool call and result round-trip.
 Env: OPENAI_API_KEY
 """
 import os, sys, json
@@ -9,11 +9,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv; load_dotenv()
 from openai import OpenAI
-from _common.token_utils import print_openai_usage
+from _common.token_utils import print_openai_usage, check_env_keys
 
+check_env_keys()
 client = OpenAI()
 
-# --- Tool definition (OpenAI wraps in type: "function") ---
 tools = [
     {
         "type": "function",
@@ -31,38 +31,42 @@ tools = [
     }
 ]
 
-# --- Local function implementation ---
-def get_weather(location: str) -> str:
-    return json.dumps({"location": location, "condition": "sunny", "temp_c": 24})
+WEATHER_DATA = {
+    "tokyo": {"condition": "sunny", "temp_c": 24, "humidity": 55},
+    "london": {"condition": "cloudy", "temp_c": 14, "humidity": 78},
+    "new york": {"condition": "rainy", "temp_c": 18, "humidity": 85},
+}
 
-print("=== OpenAI Chat Completions — Function Calling ===\n")
+def get_weather(location: str) -> str:
+    data = WEATHER_DATA.get(location.lower(), {"condition": "unknown", "temp_c": 20, "humidity": 60})
+    return json.dumps({"location": location, **data})
+
+print("=== OpenAI Chat Completions — Function Calling (3+ turns) ===\n")
 
 messages = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user",   "content": "What's the weather in Tokyo?"},
+    {"role": "system", "content": "You are a helpful weather assistant. When asked about multiple cities, check each one separately."},
+    {"role": "user", "content": "Compare the weather in Tokyo, London, and New York. Which city is warmest?"},
 ]
 
-# Step 1: Initial call — model decides to call a tool
-response = client.chat.completions.create(
-    model="gpt-4o-mini", messages=messages, tools=tools,
-)
-print_openai_usage(response, label="Step 1 (tool selection)")
-msg = response.choices[0].message
-
-if msg.tool_calls:
-    tc = msg.tool_calls[0]
-    args = json.loads(tc.function.arguments)  # OpenAI returns JSON string
-    print(f"Tool call: {tc.function.name}({args})")
-
-    result = get_weather(**args)
-    print(f"Tool result: {result}")
-
-    # Step 2: Send tool result back
-    messages.append(msg)
-    messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-
-    response2 = client.chat.completions.create(
+turn = 0
+while turn < 6:
+    turn += 1
+    response = client.chat.completions.create(
         model="gpt-4o-mini", messages=messages, tools=tools,
     )
-    print(f"\nAssistant: {response2.choices[0].message.content}")
-    print_openai_usage(response2, label="Step 2 (final answer)")
+    print_openai_usage(response, label=f"Turn {turn}")
+    msg = response.choices[0].message
+
+    if not msg.tool_calls:
+        print(f"\nAssistant: {msg.content}")
+        break
+
+    messages.append(msg)
+    for tc in msg.tool_calls:
+        args = json.loads(tc.function.arguments)
+        print(f"  Tool call: {tc.function.name}({args})")
+        result = get_weather(**args)
+        print(f"  Result: {result}")
+        messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+
+print(f"\nTotal turns: {turn}")
