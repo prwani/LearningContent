@@ -29,17 +29,19 @@ python level01_basics/openai_chat_completion.py
 | 6 | `level06_agents/` | `openai_agentic_loop.py`, `anthropic_agentic_loop.py`, **`claude_agent_sdk_agent.py`** | Agentic loops + structured output (3+ turns), **Agent SDK autonomous agent** |
 | 7 | `level07_skills/` | `skill_template_demo.py`, `openai_chat_skills.py`, `openai_shell_tool.py`, `anthropic_messages_skills.py`, **`claude_agent_sdk_skills.py`** | SKILL.md standard (3+ turns), skills + tools, **Agent SDK skills** |
 | 8 | `level08_full_stack/` | `openai_full_agent.py`, `anthropic_full_agent.py`, **`claude_agent_sdk_full.py`** | Full stack: skills + tools + MCP (3+ turns), **Agent SDK full stack** |
-| 9 | `level09_plugins/` | `plugin_loader.py`, `openai_plugin_pattern.py`, `anthropic_plugin_demo.py`, **`claude_agent_sdk_plugin.py`** | Plugin architecture (3+ turns): manifest parsing, MCP routing, **Agent SDK plugins** |
-| 10 | `level10_reference/` | `unified_api_demo.py`, `decision_tree.py`, **`agent_sdk_comparison.py`** | Side-by-side comparison, decision tree, **Messages API vs Agent SDK** |
+| 9 | `level09_plugins/` | `plugin_loader.py`, `openai_plugin_pattern.py`, `azureopenai_plugin_pattern.py`, `anthropic_plugin_demo.py`, **`claude_agent_sdk_plugin.py`** | Plugin architecture (3+ turns): manifest parsing, MCP routing, **Agent SDK plugins** |
+| 10 | `level10_reference/` | `unified_api_demo.py`, `decision_tree.py`, **`agent_sdk_comparison.py`** | Side-by-side comparison (OpenAI + Azure + Anthropic), decision tree, **Messages API vs Agent SDK** |
 
 ## API Coverage per Level
 
-Every level (except 1-2) includes examples for all three approaches:
+Every level includes examples for all five approaches:
 
 | Approach | Package | Levels |
 |----------|---------|--------|
 | **OpenAI Chat Completions** | `openai` | 1-10 |
 | **OpenAI Responses API** | `openai` | 1-10 |
+| **Azure OpenAI Chat Completions** | `openai` (AzureOpenAI) | 1-10 |
+| **Azure OpenAI Responses API** | `openai` (AzureOpenAI) | 1-10 |
 | **Anthropic Messages API** | `anthropic` | 1-10 |
 | **Claude Agent SDK** | `claude-agent-sdk` | 3-10 |
 
@@ -63,6 +65,9 @@ cd mcp_servers && bash start_servers.sh
 | Variable | Required For | Description |
 |----------|-------------|-------------|
 | `OPENAI_API_KEY` | All OpenAI demos | OpenAI API key |
+| `AZURE_OPENAI_ENDPOINT` | All Azure OpenAI demos | Azure OpenAI endpoint URL |
+| `AZURE_OPENAI_API_KEY` | All Azure OpenAI demos | Azure OpenAI API key |
+| `AZURE_OPENAI_DEPLOYMENT` | All Azure OpenAI demos | Model deployment name (defaults to `gpt-4o-mini`) |
 | `ANTHROPIC_API_KEY` | All Anthropic + Agent SDK demos | Anthropic API key |
 
 ## Token Usage
