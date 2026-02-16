@@ -547,6 +547,40 @@ summary = asyncio.run(check_all())
                 <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
                     <strong>OpenAI equivalent:</strong> Not directly comparable. OpenAI's <code>shell</code> tool runs commands in a hosted Debian 12 container, and <code>code_interpreter</code> runs model-generated code — but <strong>neither can call user-defined function tools from within the sandbox</strong>. The shell tool executes shell commands (e.g., <code>python script.py</code>, <code>ls -l</code>), while Anthropic's PTC lets the model write Python that invokes <code>get_weather()</code> or <code>check_compliance()</code> — actual user-defined tools — from within code execution. OpenAI's Responses API can chain multiple tool calls in a single response (and executes built-in tools like <code>web_search</code> automatically), but user-defined tool orchestration still requires separate API round-trips.
                 </div>
+
+                <h4 class="font-semibold text-gray-700 mt-6 mb-2">Programmatic Tool Calling Flow</h4>
+                <p class="text-sm text-gray-600 mb-3">End-to-end sequence showing how Claude orchestrates multiple tool calls inside a single code execution sandbox, keeping intermediate results out of model context.</p>
+
+                <div class="mermaid text-sm">
+sequenceDiagram
+    participant App as Your App
+    participant API as Anthropic API
+    participant Claude as Claude Model
+    participant Sandbox as Code Execution Sandbox
+
+    App->>API: Request with code_execution tool + user-defined tools (allowed_callers: code_execution)
+    API->>Claude: "Check budget compliance for all 10 departments in Q3"
+
+    Note over Claude: Decides to use programmatic tool calling
+    Claude->>Sandbox: Generates Python code (asyncio.gather over 10 depts)
+
+    loop For each department (parallel inside sandbox)
+        Sandbox->>App: tool_call: get_budget_item(dept, "Q3")
+        App->>Sandbox: tool_result: {allocated: 500K, spent: 420K}
+        Sandbox->>App: tool_call: check_compliance(dept, 420K)
+        App->>Sandbox: tool_result: {compliant: true}
+    end
+
+    Note over Sandbox: 20 tool calls executed, only final summary (~1KB) returned
+    Sandbox->>Claude: code_result: [{dept, budget, spent, compliant}, ...]
+
+    Claude->>API: Final text response with summary table
+    API->>App: "All 10 departments are within Q3 budget compliance..."
+                </div>
+
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+                    <strong>Key insight:</strong> In the traditional approach, all 20 tool results (~200KB) would be appended to the conversation context. With programmatic tool calling, the sandbox executes all tool calls internally and only the final aggregated summary (~1KB) enters Claude's context — a <strong>99.5% reduction</strong> in intermediate context growth.
+                </div>
             </div>
 
             <!-- 5.5 Tool Use Examples (Anthropic) -->
