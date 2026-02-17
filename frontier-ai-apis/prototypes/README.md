@@ -13,22 +13,29 @@ pip install -r _common/requirements.txt
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 
+# For Azure OpenAI demos, also set:
+export AZURE_OPENAI_ENDPOINT="https://<your-resource>.openai.azure.com/"
+export AZURE_OPENAI_DEPLOYMENT="gpt-4o-mini"  # your deployment name
+# Auth: Uses DefaultAzureCredential (Entra ID) — run `az login` first
+
 # 3. Run any demo
 python level01_basics/openai_chat_completion.py
+# or an Azure OpenAI demo
+python level01_basics/azureopenai_chat_completion.py
 ```
 
 ## Levels
 
 | Level | Directory | Scripts | What You Learn |
 |-------|-----------|---------|----------------|
-| 1 | `level01_basics/` | `openai_chat_completion.py`, `openai_responses_api.py`, `anthropic_messages.py` | Single-turn: Chat Completions vs Responses API vs Messages API |
-| 2 | `level02_multi_turn/` | `openai_chat_multi_turn.py`, `openai_responses_stateful.py`, `anthropic_messages_multi_turn.py` | Multi-turn: stateless history, stateful `previous_response_id`, prompt caching |
-| 3 | `level03_function_calling/` | `openai_function_calling.py`, `openai_responses_function.py`, `anthropic_tool_use.py`, **`claude_agent_sdk_tools.py`** | Function calling (3+ turns): tool definitions, arg parsing, **Agent SDK tool loop** |
-| 4 | `level04_builtin_tools/` | `openai_chat_builtin_tools.py`, `openai_web_search.py`, `openai_code_interpreter.py`, `anthropic_code_execution.py`, **`claude_agent_sdk_tools.py`** | Built-in tools (3+ turns): web search, code interpreter, **Agent SDK built-in tools** |
-| 5 | `level05_tool_discovery/` | `openai_meta_tool_registry.py`, `openai_responses_tool_discovery.py`, `anthropic_tool_search.py`, **`claude_agent_sdk_discovery.py`** | Scaling 50+ tools (3+ turns): meta-tool registry, defer_loading, **Agent SDK MCP discovery** |
-| 6 | `level06_agents/` | `openai_agentic_loop.py`, `anthropic_agentic_loop.py`, **`claude_agent_sdk_agent.py`** | Agentic loops + structured output (3+ turns), **Agent SDK autonomous agent** |
-| 7 | `level07_skills/` | `skill_template_demo.py`, `openai_chat_skills.py`, `openai_shell_tool.py`, `anthropic_messages_skills.py`, **`claude_agent_sdk_skills.py`** | SKILL.md standard (3+ turns), skills + tools, **Agent SDK skills** |
-| 8 | `level08_full_stack/` | `openai_full_agent.py`, `anthropic_full_agent.py`, **`claude_agent_sdk_full.py`** | Full stack: skills + tools + MCP (3+ turns), **Agent SDK full stack** |
+| 1 | `level01_basics/` | `openai_chat_completion.py`, `openai_responses_api.py`, `azureopenai_chat_completion.py`, `azureopenai_responses_api.py`, `anthropic_messages.py` | Single-turn: Chat Completions vs Responses API vs Messages API |
+| 2 | `level02_multi_turn/` | `openai_chat_multi_turn.py`, `openai_responses_stateful.py`, `azureopenai_chat_multi_turn.py`, `azureopenai_responses_stateful.py`, `anthropic_messages_multi_turn.py` | Multi-turn: stateless history, stateful `previous_response_id`, prompt caching |
+| 3 | `level03_function_calling/` | `openai_function_calling.py`, `openai_responses_function.py`, `azureopenai_function_calling.py`, `azureopenai_responses_function.py`, `anthropic_tool_use.py`, **`claude_agent_sdk_tools.py`** | Function calling (3+ turns): tool definitions, arg parsing, **Agent SDK tool loop** |
+| 4 | `level04_builtin_tools/` | `openai_chat_builtin_tools.py`, `openai_web_search.py`, `openai_code_interpreter.py`, `azureopenai_chat_builtin_tools.py`, `azureopenai_web_search.py`, `azureopenai_code_interpreter.py`, `anthropic_code_execution.py`, **`claude_agent_sdk_tools.py`** | Built-in tools (3+ turns): web search, code interpreter, **Agent SDK built-in tools** |
+| 5 | `level05_tool_discovery/` | `openai_meta_tool_registry.py`, `openai_responses_tool_discovery.py`, `azureopenai_meta_tool_registry.py`, `azureopenai_responses_tool_discovery.py`, `anthropic_tool_search.py`, **`claude_agent_sdk_discovery.py`** | Scaling 50+ tools (3+ turns): meta-tool registry, defer_loading, **Agent SDK MCP discovery** |
+| 6 | `level06_agents/` | `openai_agentic_loop.py`, `azureopenai_agentic_loop.py`, `anthropic_agentic_loop.py`, **`claude_agent_sdk_agent.py`** | Agentic loops + structured output (3+ turns), **Agent SDK autonomous agent** |
+| 7 | `level07_skills/` | `skill_template_demo.py`, `openai_chat_skills.py`, `openai_shell_tool.py`, `azureopenai_chat_skills.py`, `azureopenai_shell_tool.py`, `anthropic_messages_skills.py`, **`claude_agent_sdk_skills.py`** | SKILL.md standard (3+ turns), skills + tools, **Agent SDK skills** |
+| 8 | `level08_full_stack/` | `openai_full_agent.py`, `azureopenai_full_agent.py`, `anthropic_full_agent.py`, **`claude_agent_sdk_full.py`** | Full stack: skills + tools + MCP (3+ turns), **Agent SDK full stack** |
 | 9 | `level09_plugins/` | `plugin_loader.py`, `openai_plugin_pattern.py`, `azureopenai_plugin_pattern.py`, `anthropic_plugin_demo.py`, **`claude_agent_sdk_plugin.py`** | Plugin architecture (3+ turns): manifest parsing, MCP routing, **Agent SDK plugins** |
 | 10 | `level10_reference/` | `unified_api_demo.py`, `decision_tree.py`, **`agent_sdk_comparison.py`** | Side-by-side comparison (OpenAI + Azure + Anthropic), decision tree, **Messages API vs Agent SDK** |
 
@@ -66,9 +73,10 @@ cd mcp_servers && bash start_servers.sh
 |----------|-------------|-------------|
 | `OPENAI_API_KEY` | All OpenAI demos | OpenAI API key |
 | `AZURE_OPENAI_ENDPOINT` | All Azure OpenAI demos | Azure OpenAI endpoint URL |
-| `AZURE_OPENAI_API_KEY` | All Azure OpenAI demos | Azure OpenAI API key |
 | `AZURE_OPENAI_DEPLOYMENT` | All Azure OpenAI demos | Model deployment name (defaults to `gpt-4o-mini`) |
 | `ANTHROPIC_API_KEY` | All Anthropic + Agent SDK demos | Anthropic API key |
+
+> **Azure OpenAI Authentication:** All Azure OpenAI demos use `DefaultAzureCredential` from `azure-identity` (Entra ID / managed identity). No API key is needed — just run `az login` before running the demos. The logged-in user must have the **Cognitive Services OpenAI User** role on the Azure OpenAI resource.
 
 ## Token Usage
 

@@ -8,7 +8,6 @@ def check_env_keys():
         "OPENAI_API_KEY": bool(os.environ.get("OPENAI_API_KEY")),
         "ANTHROPIC_API_KEY": bool(os.environ.get("ANTHROPIC_API_KEY")),
         "AZURE_OPENAI_ENDPOINT": bool(os.environ.get("AZURE_OPENAI_ENDPOINT")),
-        "AZURE_OPENAI_API_KEY": bool(os.environ.get("AZURE_OPENAI_API_KEY")),
     }
     print("Environment:")
     for k, v in keys.items():

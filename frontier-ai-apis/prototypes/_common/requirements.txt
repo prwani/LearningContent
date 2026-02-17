@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 fastmcp>=2.14.3
 rich>=13.0.0
 anyio>=4.0.0
+azure-identity>=1.17.0

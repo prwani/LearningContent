@@ -1,13 +1,15 @@
 """Level 10 — Unified API Demo: Same prompt to OpenAI, Azure OpenAI, and Anthropic.
 
 Sends identical prompts to all providers and compares responses + token usage.
-Env: OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT, ANTHROPIC_API_KEY
+Env: OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT, ANTHROPIC_API_KEY
+Auth: Azure OpenAI uses DefaultAzureCredential (Entra ID) — no API key needed.
 """
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv; load_dotenv()
 from openai import OpenAI, AzureOpenAI
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 import anthropic
 from _common.token_utils import print_openai_usage, print_anthropic_usage, check_env_keys
 
@@ -19,10 +21,12 @@ anthropic_client = anthropic.Anthropic()
 # Azure OpenAI client (optional — skipped if env vars not set)
 azure_client = None
 azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
-if os.environ.get("AZURE_OPENAI_ENDPOINT") and os.environ.get("AZURE_OPENAI_API_KEY"):
+if os.environ.get("AZURE_OPENAI_ENDPOINT"):
+    credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
     azure_client = AzureOpenAI(
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        azure_ad_token_provider=token_provider,
         api_version="2024-12-01-preview",
     )
 
