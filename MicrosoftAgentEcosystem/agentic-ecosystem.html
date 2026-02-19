@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Agentic AI Ecosystem — Interactive Whitepaper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --accent: #f59e0b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body.dark-mode { background: #1a1a2e; color: #e2e8f0; }
+        body.dark-mode .card { background: #16213e; border-color: #2d3748; }
+        body.dark-mode .bg-white { background: #16213e !important; }
+        body.dark-mode .bg-gray-50 { background: #1e293b !important; }
+        body.dark-mode .text-gray-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-gray-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-gray-800 { color: #e2e8f0 !important; }
+        body.dark-mode .text-gray-500 { color: #94a3b8 !important; }
+        body.dark-mode .border-gray-200 { border-color: #374151 !important; }
+        body.dark-mode select { background: #16213e; color: #e2e8f0; border-color: #4a5568; }
+
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+                border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+        .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;
+                 text-transform: uppercase; letter-spacing: 0.03em; display: inline-block; }
+        .badge-component { background: #dbeafe; color: #1e40af; }
+        .badge-lifecycle { background: #fce7f3; color: #9d174d; }
+        .badge-platform { background: #dcfce7; color: #166534; }
+
+        .ref-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+                    border-radius: 8px; font-size: 0.75rem; background: #f3f4f6; color: #4b5563;
+                    text-decoration: none; transition: all 0.2s; border: 1px solid #e5e7eb; }
+        .ref-link:hover { background: #e5e7eb; color: #1f2937; }
+        body.dark-mode .ref-link { background: #2d3748; color: #a0aec0; border-color: #4a5568; }
+        body.dark-mode .ref-link:hover { background: #4a5568; color: #e2e8f0; }
+
+        .filter-select { padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+                         border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15);
+                         color: white; cursor: pointer; min-width: 180px; appearance: none;
+                         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                         background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+        .filter-select:focus { outline: none; border-color: white; background: rgba(255,255,255,0.25); }
+        .filter-select option { background: #1e1b4b; color: white; }
+
+        .counter-badge { background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 12px;
+                         font-size: 0.75rem; font-weight: 600; }
+
+        /* Interactive SVG Diagram */
+        .diagram-container { max-width: 900px; margin: 0 auto 32px; }
+        .diagram-box { cursor: pointer; transition: all 0.3s ease; }
+        .diagram-box:hover { filter: brightness(1.15); }
+        .diagram-box.active { filter: brightness(1.2); stroke-width: 3; }
+        .diagram-ellipse { cursor: pointer; transition: all 0.3s ease; }
+        .diagram-ellipse:hover { filter: brightness(1.2); transform: scale(1.05); transform-origin: center; }
+        .diagram-ellipse.active { filter: brightness(1.3); stroke-width: 2.5; }
+        .diagram-label { pointer-events: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        .no-content { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .no-content .icon { font-size: 3rem; margin-bottom: 12px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+
+        .content-paragraph { line-height: 1.7; margin-bottom: 12px; font-size: 0.925rem; color: #374151; }
+        body.dark-mode .content-paragraph { color: #cbd5e1; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header / Nav -->
+    <nav class="sticky top-0 z-40 bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <a href="index.html" class="text-purple-200 text-xs hover:text-white">&larr; Back to Home</a>
+                    <h1 class="text-xl font-bold">Microsoft Agentic AI Ecosystem</h1>
+                    <p class="text-purple-100 text-xs">Interactive Whitepaper — Point of View across Components, Lifecycle &amp; Platforms</p>
+                </div>
+                <div class="flex gap-2">
+                    <span id="resultCount" class="counter-badge">300 topics</span>
+                    <button onclick="toggleDarkMode()" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30" title="Toggle dark mode">🌓</button>
+                </div>
+            </div>
+            <!-- Filter Dropdowns -->
+            <div class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs text-purple-200 mb-1 font-semibold">🧩 Component</label>
+                    <select id="filterComponent" class="filter-select" onchange="applyFilters()">
+                        <option value="all">All Components</option>
+                        <option value="models">Models</option>
+                        <option value="tools">Tools</option>
+                        <option value="skills">Skills</option>
+                        <option value="plugins">Plugins</option>
+                        <option value="mcp_servers">MCP Servers</option>
+                        <option value="agents">Agents</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-purple-200 mb-1 font-semibold">⚙️ Lifecycle</label>
+                    <select id="filterLifecycle" class="filter-select" onchange="applyFilters()">
+                        <option value="all">All Lifecycle Aspects</option>
+                        <option value="identity">Identity</option>
+                        <option value="source_control_cicd">Source Control &amp; CI/CD</option>
+                        <option value="distribution">Distribution</option>
+                        <option value="deployment_hosting">Deployment / Hosting</option>
+                        <option value="discovery">Discovery</option>
+                        <option value="observability">Observability</option>
+                        <option value="governance">Governance</option>
+                        <option value="channels">Channels</option>
+                        <option value="extensibility">Extensibility</option>
+                        <option value="integration">Integration (A2A)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-purple-200 mb-1 font-semibold">🏗️ Platform</label>
+                    <select id="filterPlatform" class="filter-select" onchange="applyFilters()">
+                        <option value="all">All Platforms</option>
+                        <option value="m365_agent_builder">M365 Copilot Agent Builder</option>
+                        <option value="copilot_studio">Copilot Studio</option>
+                        <option value="foundry_agent_service">Foundry Agent Service</option>
+                        <option value="foundry_self_hosted">Foundry Self-hosted</option>
+                        <option value="opensource_aks">Open-source on AKS / App Service</option>
+                    </select>
+                </div>
+                <button onclick="resetFilters()" class="px-3 py-1.5 bg-white/20 rounded-lg text-sm hover:bg-white/30 font-semibold" title="Reset all filters">✕ Reset</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+
+        <!-- Interactive SVG Diagram -->
+        <div class="diagram-container card" id="diagramCard">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 text-center">Ecosystem Overview <span class="text-sm font-normal text-gray-500">— click any element to filter</span></h2>
+            <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" id="ecosystemDiagram" style="width:100%;height:auto;">
+                <!-- Background -->
+                <defs>
+                    <linearGradient id="gradComponent" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1"/>
+                        <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1"/>
+                    </linearGradient>
+                    <linearGradient id="gradPlatform" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#10b981;stop-opacity:1"/>
+                        <stop offset="100%" style="stop-color:#059669;stop-opacity:1"/>
+                    </linearGradient>
+                    <linearGradient id="gradLifecycle" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ec4899;stop-opacity:0.85"/>
+                        <stop offset="100%" style="stop-color:#db2777;stop-opacity:0.85"/>
+                    </linearGradient>
+                    <filter id="shadow">
+                        <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+                    </filter>
+                </defs>
+
+                <!-- Lifecycle Ellipses (surrounding) -->
+                <g id="lifecycleGroup">
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="identity" onclick="diagramClick('lifecycle','identity')">
+                        <ellipse cx="130" cy="60" rx="85" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="130" y="65" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Identity</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="source_control_cicd" onclick="diagramClick('lifecycle','source_control_cicd')">
+                        <ellipse cx="340" cy="35" rx="105" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="340" y="40" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Source Control + CI/CD</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="discovery" onclick="diagramClick('lifecycle','discovery')">
+                        <ellipse cx="560" cy="35" rx="80" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="560" y="40" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Discovery</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="distribution" onclick="diagramClick('lifecycle','distribution')">
+                        <ellipse cx="760" cy="60" rx="85" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="760" y="65" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Distribution</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="deployment_hosting" onclick="diagramClick('lifecycle','deployment_hosting')">
+                        <ellipse cx="60" cy="260" rx="55" ry="56" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="60" y="254" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Deployment</text>
+                        <text x="60" y="270" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">/ Hosting</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="observability" onclick="diagramClick('lifecycle','observability')">
+                        <ellipse cx="840" cy="260" rx="55" ry="56" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="840" y="265" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Observability</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="governance" onclick="diagramClick('lifecycle','governance')">
+                        <ellipse cx="130" cy="470" rx="85" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="130" y="475" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Governance</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="channels" onclick="diagramClick('lifecycle','channels')">
+                        <ellipse cx="360" cy="490" rx="80" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="360" y="495" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Channels</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="extensibility" onclick="diagramClick('lifecycle','extensibility')">
+                        <ellipse cx="560" cy="490" rx="85" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="560" y="495" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">Extensibility</text>
+                    </g>
+                    <g class="diagram-ellipse" data-type="lifecycle" data-value="integration" onclick="diagramClick('lifecycle','integration')">
+                        <ellipse cx="760" cy="470" rx="85" ry="28" fill="url(#gradLifecycle)" stroke="#be185d" stroke-width="1.5" filter="url(#shadow)"/>
+                        <text x="760" y="468" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Integration</text>
+                        <text x="760" y="482" text-anchor="middle" class="diagram-label" fill="white" font-size="10" font-weight="400">(Agent-to-Agent)</text>
+                    </g>
+                </g>
+
+                <!-- Component Box (left) -->
+                <g class="diagram-box" data-type="component-group">
+                    <rect x="140" y="110" width="260" height="340" rx="16" fill="url(#gradComponent)" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
+                    <text x="270" y="140" text-anchor="middle" class="diagram-label" fill="white" font-size="15" font-weight="700">Components</text>
+                    <line x1="180" y1="150" x2="360" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                </g>
+                <!-- Component items -->
+                <g class="diagram-ellipse" data-type="component" data-value="models" onclick="diagramClick('component','models')">
+                    <rect x="175" y="162" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="182" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">🤖 Models</text>
+                </g>
+                <g class="diagram-ellipse" data-type="component" data-value="tools" onclick="diagramClick('component','tools')">
+                    <rect x="175" y="200" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="220" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">🔧 Tools</text>
+                </g>
+                <g class="diagram-ellipse" data-type="component" data-value="skills" onclick="diagramClick('component','skills')">
+                    <rect x="175" y="238" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="258" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">⚡ Skills</text>
+                </g>
+                <g class="diagram-ellipse" data-type="component" data-value="plugins" onclick="diagramClick('component','plugins')">
+                    <rect x="175" y="276" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="296" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">🔌 Plugins</text>
+                </g>
+                <g class="diagram-ellipse" data-type="component" data-value="mcp_servers" onclick="diagramClick('component','mcp_servers')">
+                    <rect x="175" y="314" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="334" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">🌐 MCP Servers</text>
+                </g>
+                <g class="diagram-ellipse" data-type="component" data-value="agents" onclick="diagramClick('component','agents')">
+                    <rect x="175" y="352" width="190" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="270" y="372" text-anchor="middle" class="diagram-label" fill="white" font-size="12" font-weight="600">🤝 Agents</text>
+                </g>
+
+                <!-- Connector Arrow -->
+                <defs>
+                    <marker id="arrowRight" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#8b5cf6"/>
+                    </marker>
+                    <marker id="arrowLeft" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                        <polygon points="10 0, 0 3.5, 10 7" fill="#8b5cf6"/>
+                    </marker>
+                </defs>
+                <line x1="405" y1="280" x2="495" y2="280" stroke="#8b5cf6" stroke-width="3" marker-end="url(#arrowRight)" marker-start="url(#arrowLeft)"/>
+
+                <!-- Platform Box (right) -->
+                <g class="diagram-box" data-type="platform-group">
+                    <rect x="500" y="110" width="280" height="340" rx="16" fill="url(#gradPlatform)" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+                    <text x="640" y="140" text-anchor="middle" class="diagram-label" fill="white" font-size="15" font-weight="700">Platforms</text>
+                    <line x1="530" y1="150" x2="750" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                </g>
+                <!-- Platform items -->
+                <g class="diagram-ellipse" data-type="platform" data-value="m365_agent_builder" onclick="diagramClick('platform','m365_agent_builder')">
+                    <rect x="525" y="162" width="230" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="640" y="182" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">M365 Copilot Agent Builder</text>
+                </g>
+                <g class="diagram-ellipse" data-type="platform" data-value="copilot_studio" onclick="diagramClick('platform','copilot_studio')">
+                    <rect x="525" y="200" width="230" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="640" y="220" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Copilot Studio</text>
+                </g>
+                <g class="diagram-ellipse" data-type="platform" data-value="foundry_agent_service" onclick="diagramClick('platform','foundry_agent_service')">
+                    <rect x="525" y="238" width="230" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="640" y="258" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Foundry Agent Service</text>
+                </g>
+                <g class="diagram-ellipse" data-type="platform" data-value="foundry_self_hosted" onclick="diagramClick('platform','foundry_self_hosted')">
+                    <rect x="525" y="276" width="230" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="640" y="296" text-anchor="middle" class="diagram-label" fill="white" font-size="11" font-weight="600">Foundry Self-hosted Agents</text>
+                </g>
+                <g class="diagram-ellipse" data-type="platform" data-value="opensource_aks" onclick="diagramClick('platform','opensource_aks')">
+                    <rect x="525" y="314" width="230" height="30" rx="15" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                    <text x="640" y="328" text-anchor="middle" class="diagram-label" fill="white" font-size="10" font-weight="600">Open-source Framework</text>
+                    <text x="640" y="340" text-anchor="middle" class="diagram-label" fill="white" font-size="9" font-weight="400">(AKS / App Service)</text>
+                </g>
+
+                <!-- Legend -->
+                <g transform="translate(500,390)">
+                    <rect x="0" y="0" width="16" height="16" rx="4" fill="url(#gradComponent)"/>
+                    <text x="22" y="13" font-size="11" fill="#6b7280" font-weight="500">Component</text>
+                    <rect x="100" y="0" width="16" height="16" rx="4" fill="url(#gradPlatform)"/>
+                    <text x="122" y="13" font-size="11" fill="#6b7280" font-weight="500">Platform</text>
+                    <ellipse cx="215" cy="8" rx="8" ry="8" fill="url(#gradLifecycle)"/>
+                    <text x="228" y="13" font-size="11" fill="#6b7280" font-weight="500">Lifecycle</text>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Content Area -->
+        <div id="contentArea"></div>
+
+        <!-- No Results -->
+        <div id="noResults" class="no-content hidden">
+            <div class="icon">📋</div>
+            <p class="text-lg font-semibold">Content coming soon</p>
+            <p class="text-sm mt-2">This intersection hasn't been documented yet. Select a different combination or reset filters.</p>
+        </div>
+    </main>
+
+    <!-- Data File -->
+    <script src="agentic-ecosystem-data.js"></script>
+
+    <script>
+    // ── Dimension metadata ──
+    const COMPONENTS = {
+        models: { label: 'Models', icon: '🤖' },
+        tools: { label: 'Tools', icon: '🔧' },
+        skills: { label: 'Skills', icon: '⚡' },
+        plugins: { label: 'Plugins', icon: '🔌' },
+        mcp_servers: { label: 'MCP Servers', icon: '🌐' },
+        agents: { label: 'Agents', icon: '🤝' }
+    };
+    const LIFECYCLES = {
+        identity: { label: 'Identity', icon: '🔐' },
+        source_control_cicd: { label: 'Source Control & CI/CD', icon: '🔄' },
+        distribution: { label: 'Distribution', icon: '📦' },
+        deployment_hosting: { label: 'Deployment / Hosting', icon: '☁️' },
+        discovery: { label: 'Discovery', icon: '🔍' },
+        observability: { label: 'Observability', icon: '📊' },
+        governance: { label: 'Governance', icon: '🛡️' },
+        channels: { label: 'Channels', icon: '💬' },
+        extensibility: { label: 'Extensibility', icon: '🧩' },
+        integration: { label: 'Integration (A2A)', icon: '🔗' }
+    };
+    const PLATFORMS = {
+        m365_agent_builder: { label: 'M365 Copilot Agent Builder', icon: 'Ⓜ️' },
+        copilot_studio: { label: 'Copilot Studio', icon: '🎨' },
+        foundry_agent_service: { label: 'Foundry Agent Service', icon: '🏭' },
+        foundry_self_hosted: { label: 'Foundry Self-hosted', icon: '🖥️' },
+        opensource_aks: { label: 'Open-source on AKS', icon: '🐳' }
+    };
+
+    // ── Dark mode ──
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+    // ── Diagram click → set filter ──
+    function diagramClick(type, value) {
+        const map = { component: 'filterComponent', lifecycle: 'filterLifecycle', platform: 'filterPlatform' };
+        const sel = document.getElementById(map[type]);
+        if (sel) { sel.value = (sel.value === value) ? 'all' : value; }
+        applyFilters();
+    }
+
+    // ── Reset ──
+    function resetFilters() {
+        document.getElementById('filterComponent').value = 'all';
+        document.getElementById('filterLifecycle').value = 'all';
+        document.getElementById('filterPlatform').value = 'all';
+        applyFilters();
+    }
+
+    // ── Build a content card HTML ──
+    function buildCard(comp, life, plat, entry) {
+        const c = COMPONENTS[comp], l = LIFECYCLES[life], p = PLATFORMS[plat];
+        let refsHtml = '';
+        if (entry.references && entry.references.length) {
+            refsHtml = '<div class="flex flex-wrap gap-2 mt-4">' +
+                entry.references.map(r =>
+                    `<a href="${r.url}" target="_blank" rel="noopener" class="ref-link">📎 ${r.title}</a>`
+                ).join('') + '</div>';
+        }
+        const paragraphs = entry.paragraphs.map(p => `<p class="content-paragraph">${p}</p>`).join('');
+        return `
+        <div class="card fade-in">
+            <div class="flex flex-wrap gap-2 mb-3">
+                <span class="badge badge-component">${c.icon} ${c.label}</span>
+                <span class="badge badge-lifecycle">${l.icon} ${l.label}</span>
+                <span class="badge badge-platform">${p.icon} ${p.label}</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-3">${entry.summary || (c.label + ' × ' + l.label + ' × ' + p.label)}</h3>
+            ${paragraphs}
+            ${refsHtml}
+        </div>`;
+    }
+
+    // ── Apply filters & render ──
+    function applyFilters() {
+        const fc = document.getElementById('filterComponent').value;
+        const fl = document.getElementById('filterLifecycle').value;
+        const fp = document.getElementById('filterPlatform').value;
+
+        // Update diagram active states
+        document.querySelectorAll('.diagram-ellipse, .diagram-box').forEach(el => el.classList.remove('active'));
+        if (fc !== 'all') document.querySelectorAll(`[data-type="component"][data-value="${fc}"]`).forEach(e => e.classList.add('active'));
+        if (fl !== 'all') document.querySelectorAll(`[data-type="lifecycle"][data-value="${fl}"]`).forEach(e => e.classList.add('active'));
+        if (fp !== 'all') document.querySelectorAll(`[data-type="platform"][data-value="${fp}"]`).forEach(e => e.classList.add('active'));
+
+        const comps = fc === 'all' ? Object.keys(COMPONENTS) : [fc];
+        const lifes = fl === 'all' ? Object.keys(LIFECYCLES) : [fl];
+        const plats = fp === 'all' ? Object.keys(PLATFORMS) : [fp];
+
+        let html = '';
+        let count = 0;
+        for (const c of comps) {
+            for (const l of lifes) {
+                for (const p of plats) {
+                    if (typeof ECOSYSTEM_DATA !== 'undefined' &&
+                        ECOSYSTEM_DATA[c] && ECOSYSTEM_DATA[c][l] && ECOSYSTEM_DATA[c][l][p] &&
+                        ECOSYSTEM_DATA[c][l][p].paragraphs && ECOSYSTEM_DATA[c][l][p].paragraphs.length > 0 &&
+                        ECOSYSTEM_DATA[c][l][p].paragraphs[0] !== '') {
+                        html += buildCard(c, l, p, ECOSYSTEM_DATA[c][l][p]);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        document.getElementById('contentArea').innerHTML = html;
+        document.getElementById('noResults').classList.toggle('hidden', count > 0);
+        document.getElementById('resultCount').textContent = count + (count === 1 ? ' topic' : ' topics');
+    }
+
+    // ── Init ──
+    applyFilters();
+    </script>
+</body>
+</html>
